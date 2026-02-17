@@ -18,6 +18,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { useDeviceDetection } from "@/hooks/use-media-query";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { debug } from "@/lib/debug";
+import { playNotificationSound } from "@/lib/notification-sound";
 import { cn } from "@/lib/utils";
 import {
   ErrorBoundary,
@@ -27,6 +28,8 @@ import {
   ComposerErrorFallback,
 } from "@/components/error";
 import { DragDropProvider } from "@/contexts/drag-drop-context";
+import { AdvancedSearchPanel } from "@/components/search/advanced-search-panel";
+import { isFilterEmpty } from "@/lib/jmap/search-utils";
 
 export default function Home() {
   const router = useRouter();
@@ -77,29 +80,13 @@ export default function Home() {
     clearNewEmailNotification,
     markAsSpam,
     undoSpam,
+    searchFilters,
+    isAdvancedSearchOpen,
+    setSearchFilters,
+    clearSearchFilters,
+    toggleAdvancedSearch,
+    advancedSearch,
   } = useEmailStore();
-
-  // Play notification sound for new emails
-  const playNotificationSound = () => {
-    try {
-      // Use Web Audio API for a simple notification beep
-      const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 800; // Hz
-      oscillator.type = 'sine';
-      gainNode.gain.value = 0.1; // Low volume
-
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.15); // Short beep
-    } catch (e) {
-      debug.log('Could not play notification sound:', e);
-    }
-  };
 
   // Keyboard shortcuts handlers
   const keyboardHandlers = useMemo(() => ({
@@ -575,14 +562,25 @@ export default function Home() {
 
   const handleSearch = async (query: string) => {
     if (!client) return;
-    await searchEmails(client, query);
+    setSearchQuery(query);
+    if (!isFilterEmpty(searchFilters)) {
+      await advancedSearch(client);
+    } else {
+      await searchEmails(client, query);
+    }
   };
 
   const handleClearSearch = async () => {
     setSearchQuery("");
+    clearSearchFilters();
     if (client && selectedMailbox) {
       await fetchEmails(client, selectedMailbox);
     }
+  };
+
+  const handleAdvancedSearch = async () => {
+    if (!client) return;
+    await advancedSearch(client);
   };
 
   const handleDownloadAttachment = async (blobId: string, name: string, type?: string) => {
@@ -786,6 +784,18 @@ export default function Home() {
               }}
             />
 
+            <AdvancedSearchPanel
+              filters={searchFilters}
+              isOpen={isAdvancedSearchOpen}
+              onFiltersChange={setSearchFilters}
+              onClear={() => {
+                clearSearchFilters();
+                if (client) advancedSearch(client);
+              }}
+              onSearch={handleAdvancedSearch}
+              onClose={toggleAdvancedSearch}
+            />
+
             <ErrorBoundary fallback={EmailListErrorFallback}>
               <EmailList
                 emails={emails}
@@ -852,8 +862,8 @@ export default function Home() {
               // Mobile: full screen overlay when active
               "max-md:fixed max-md:inset-0 max-md:z-30",
               isMobile && activeView !== "viewer" && "max-md:hidden",
-              // Tablet/Desktop: flex grow
-              "md:flex-1 md:relative"
+              // Tablet/Desktop: flex grow, min-w-0 allows truncation of long subjects
+              "md:flex-1 md:min-w-0 md:relative"
             )}
           >
             {/* Mobile Conversation View - shown when thread is selected on mobile */}

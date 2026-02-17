@@ -1,0 +1,688 @@
+"use client";
+
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { X, Trash2, Check, HelpCircle, XCircle, Users } from "lucide-react";
+import { format, parseISO, addHours } from "date-fns";
+import type { CalendarEvent, Calendar, CalendarParticipant } from "@/lib/jmap/types";
+import { parseDuration } from "./event-card";
+import { ParticipantInput } from "./participant-input";
+import {
+  isOrganizer,
+  getUserParticipantId,
+  getUserStatus,
+  getParticipantList,
+  getStatusCounts,
+  buildParticipantMap,
+} from "@/lib/calendar-participants";
+
+interface EventModalProps {
+  event?: CalendarEvent | null;
+  calendars: Calendar[];
+  defaultDate?: Date;
+  onSave: (data: Partial<CalendarEvent>, sendSchedulingMessages?: boolean) => void;
+  onDelete?: (id: string, sendSchedulingMessages?: boolean) => void;
+  onRsvp?: (eventId: string, participantId: string, status: CalendarParticipant['participationStatus']) => void;
+  onClose: () => void;
+  currentUserEmails?: string[];
+}
+
+function formatDateInput(d: Date): string {
+  return format(d, "yyyy-MM-dd");
+}
+
+function formatTimeInput(d: Date): string {
+  return format(d, "HH:mm");
+}
+
+function buildDuration(startDate: Date, endDate: Date): string {
+  const diffMs = endDate.getTime() - startDate.getTime();
+  const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
+  const days = Math.floor(totalMinutes / (24 * 60));
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const minutes = totalMinutes % 60;
+  let dur = "P";
+  if (days > 0) dur += `${days}D`;
+  dur += "T";
+  if (hours > 0) dur += `${hours}H`;
+  if (minutes > 0) dur += `${minutes}M`;
+  if (dur === "PT") dur = "PT0M";
+  return dur;
+}
+
+type RecurrenceOption = "none" | "daily" | "weekly" | "monthly" | "yearly";
+type AlertOption = "none" | "at_time" | "5" | "15" | "30" | "60" | "1440";
+
+export function EventModal({
+  event,
+  calendars,
+  defaultDate,
+  onSave,
+  onDelete,
+  onRsvp,
+  onClose,
+  currentUserEmails = [],
+}: EventModalProps) {
+  const t = useTranslations("calendar");
+  const isEdit = !!event;
+
+  const userIsOrganizer = useMemo(() => {
+    if (!event) return true;
+    if (!event.participants) return true;
+    return isOrganizer(event, currentUserEmails);
+  }, [event, currentUserEmails]);
+
+  const isAttendeeMode = useMemo(() => {
+    if (!event || !event.participants) return false;
+    return !event.isOrigin && !userIsOrganizer;
+  }, [event, userIsOrganizer]);
+
+  const userParticipantId = useMemo(() => {
+    if (!event) return null;
+    return getUserParticipantId(event, currentUserEmails);
+  }, [event, currentUserEmails]);
+
+  const userCurrentStatus = useMemo(() => {
+    if (!event) return null;
+    return getUserStatus(event, currentUserEmails);
+  }, [event, currentUserEmails]);
+
+  const existingParticipants = useMemo(() => {
+    if (!event) return [];
+    return getParticipantList(event);
+  }, [event]);
+
+  const getInitialStart = (): Date => {
+    if (event?.start) return parseISO(event.start);
+    if (defaultDate) {
+      const d = new Date(defaultDate);
+      const now = new Date();
+      d.setHours(now.getHours() + 1, 0, 0, 0);
+      return d;
+    }
+    const d = new Date();
+    d.setHours(d.getHours() + 1, 0, 0, 0);
+    return d;
+  };
+
+  const getInitialEnd = (): Date => {
+    if (event?.start) {
+      const s = parseISO(event.start);
+      const dur = parseDuration(event.duration);
+      return new Date(s.getTime() + dur * 60000);
+    }
+    return addHours(getInitialStart(), 1);
+  };
+
+  const [title, setTitle] = useState(event?.title || "");
+  const [description, setDescription] = useState(event?.description || "");
+  const [location, setLocation] = useState(
+    event?.locations ? Object.values(event.locations)[0]?.name || "" : ""
+  );
+  const [startDate, setStartDate] = useState(formatDateInput(getInitialStart()));
+  const [startTime, setStartTime] = useState(formatTimeInput(getInitialStart()));
+  const [endDate, setEndDate] = useState(formatDateInput(getInitialEnd()));
+  const [endTime, setEndTime] = useState(formatTimeInput(getInitialEnd()));
+  const [allDay, setAllDay] = useState(event?.showWithoutTime || false);
+  const [calendarId, setCalendarId] = useState<string>(() => {
+    if (event?.calendarIds) return Object.keys(event.calendarIds)[0] || calendars[0]?.id || "";
+    const defaultCal = calendars.find(c => c.isDefault);
+    return defaultCal?.id || calendars[0]?.id || "";
+  });
+  const [recurrence, setRecurrence] = useState<RecurrenceOption>(() => {
+    if (!event?.recurrenceRules?.length) return "none";
+    return event.recurrenceRules[0].frequency as RecurrenceOption;
+  });
+  const [alert, setAlert] = useState<AlertOption>(() => {
+    if (!event?.alerts) return "none";
+    const first = Object.values(event.alerts)[0];
+    if (!first) return "none";
+    if (first.trigger["@type"] === "OffsetTrigger") {
+      const offset = first.trigger.offset;
+      if (offset === "PT0S") return "at_time";
+      const minMatch = offset.match(/-?PT?(\d+)M$/);
+      if (minMatch) return minMatch[1] as AlertOption;
+      const hourMatch = offset.match(/-?PT?(\d+)H$/);
+      if (hourMatch) return String(parseInt(hourMatch[1]) * 60) as AlertOption;
+      const dayMatch = offset.match(/-?P(\d+)D/);
+      if (dayMatch) return String(parseInt(dayMatch[1]) * 1440) as AlertOption;
+    }
+    return "none";
+  });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const [attendees, setAttendees] = useState<{ name: string; email: string }[]>(() => {
+    if (!event?.participants) return [];
+    return existingParticipants
+      .filter(p => !p.isOrganizer)
+      .map(p => ({ name: p.name, email: p.email }));
+  });
+  const [sendInvitations, setSendInvitations] = useState(true);
+
+  const statusCounts = useMemo(() => {
+    if (!event?.participants) return null;
+    return getStatusCounts(event);
+  }, [event]);
+
+  const handleAddAttendee = useCallback((p: { name: string; email: string }) => {
+    setAttendees(prev => [...prev, p]);
+  }, []);
+
+  const handleRemoveAttendee = useCallback((email: string) => {
+    setAttendees(prev => prev.filter(a => a.email.toLowerCase() !== email.toLowerCase()));
+  }, []);
+
+  const handleSave = useCallback(() => {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+    if (trimmedTitle.length > 500 || description.trim().length > 10000 || location.trim().length > 500) return;
+
+    const startStr = allDay
+      ? `${startDate}T00:00:00`
+      : `${startDate}T${startTime}:00`;
+    const endStr = allDay
+      ? `${endDate}T23:59:59`
+      : `${endDate}T${endTime}:00`;
+
+    const start = new Date(startStr);
+    let end = new Date(endStr);
+
+    if (end <= start) {
+      end = new Date(start.getTime() + 3600000);
+    }
+
+    const duration = allDay
+      ? `P${Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000))}D`
+      : buildDuration(start, end);
+
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const data: Partial<CalendarEvent> = {
+      title: trimmedTitle,
+      description: description.trim(),
+      start: startStr,
+      duration,
+      timeZone,
+      showWithoutTime: allDay,
+      calendarIds: { [calendarId]: true },
+      status: "confirmed",
+      freeBusyStatus: "busy",
+      privacy: "public",
+    };
+
+    if (location.trim()) {
+      data.locations = {
+        loc1: {
+          "@type": "Location",
+          name: location.trim(),
+          description: null,
+          locationTypes: null,
+          coordinates: null,
+          timeZone: null,
+          links: null,
+          relativeTo: null,
+        },
+      };
+    }
+
+    if (recurrence !== "none") {
+      data.recurrenceRules = [{
+        "@type": "RecurrenceRule",
+        frequency: recurrence,
+        interval: 1,
+        rscale: "gregorian",
+        skip: "omit",
+        firstDayOfWeek: "mo",
+        byDay: null,
+        byMonthDay: null,
+        byMonth: null,
+        byYearDay: null,
+        byWeekNo: null,
+        byHour: null,
+        byMinute: null,
+        bySecond: null,
+        bySetPosition: null,
+        count: null,
+        until: null,
+      }];
+    }
+
+    if (alert !== "none") {
+      const offset = alert === "at_time" ? "PT0S" : `-PT${alert}M`;
+      data.alerts = {
+        alert1: {
+          "@type": "Alert",
+          trigger: { "@type": "OffsetTrigger", offset, relativeTo: "start" },
+          action: "display",
+          acknowledged: null,
+          relatedTo: null,
+        },
+      };
+    }
+
+    if (attendees.length > 0 && currentUserEmails.length > 0) {
+      const organizerEmail = currentUserEmails[0];
+      const organizerName = existingParticipants.find(p => p.isOrganizer)?.name || "";
+      data.participants = buildParticipantMap(
+        { name: organizerName, email: organizerEmail },
+        attendees
+      ) as Record<string, CalendarParticipant>;
+    } else if (attendees.length === 0 && event?.participants) {
+      data.participants = null;
+    }
+
+    const shouldSendScheduling = attendees.length > 0 && sendInvitations;
+    onSave(data, shouldSendScheduling);
+  }, [title, description, location, startDate, startTime, endDate, endTime, allDay, calendarId, recurrence, alert, attendees, sendInvitations, currentUserEmails, existingParticipants, event, onSave]);
+
+  const handleRsvp = useCallback((status: CalendarParticipant['participationStatus']) => {
+    if (!event || !userParticipantId || !onRsvp) return;
+    onRsvp(event.id, userParticipantId, status);
+    onClose();
+  }, [event, userParticipantId, onRsvp, onClose]);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!isAttendeeMode) handleSave();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose, handleSave, isAttendeeMode]);
+
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    const focusableEls = modal.querySelectorAll<HTMLElement>(
+      'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstEl = focusableEls[0];
+    const lastEl = focusableEls[focusableEls.length - 1];
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      if (e.shiftKey && document.activeElement === firstEl) {
+        e.preventDefault();
+        lastEl?.focus();
+      } else if (!e.shiftKey && document.activeElement === lastEl) {
+        e.preventDefault();
+        firstEl?.focus();
+      }
+    };
+    modal.addEventListener("keydown", handler);
+    firstEl?.focus();
+    return () => modal.removeEventListener("keydown", handler);
+  }, []);
+
+  const hasParticipants = attendees.length > 0 || (event?.participants && Object.keys(event.participants).length > 0);
+
+  if (isAttendeeMode && event) {
+    const startD = parseISO(event.start);
+    const durMin = parseDuration(event.duration);
+    const endD = new Date(startD.getTime() + durMin * 60000);
+    const locationName = event.locations ? Object.values(event.locations)[0]?.name : null;
+    const participants = getParticipantList(event);
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
+        <div ref={modalRef} role="dialog" aria-modal="true" aria-label={event.title || t("events.no_title")} className="relative bg-background border border-border rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h2 className="text-lg font-semibold truncate">{event.title || t("events.no_title")}</h2>
+            <button onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors" aria-label={t("form.cancel")}>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="px-5 py-4 space-y-3">
+            <div className="text-sm">
+              <span className="font-medium">{format(startD, "EEE, MMM d, yyyy")}</span>
+              {!event.showWithoutTime && (
+                <span className="text-muted-foreground ml-2">
+                  {format(startD, "HH:mm")} – {format(endD, "HH:mm")}
+                </span>
+              )}
+            </div>
+
+            {event.description && (
+              <p className="text-sm text-muted-foreground">{event.description}</p>
+            )}
+
+            {locationName && (
+              <p className="text-sm text-muted-foreground">{locationName}</p>
+            )}
+
+            <div className="text-xs text-muted-foreground">
+              {t("participants.you_attendee")}
+            </div>
+
+            {participants.length > 0 && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <Users className="w-4 h-4" />
+                  {t("participants.title")}
+                </div>
+                <div className="space-y-1 pl-5">
+                  {participants.map(p => (
+                    <div key={p.id} className="flex items-center justify-between text-sm">
+                      <span className="truncate">{p.name || p.email}</span>
+                      <StatusBadge status={p.status} isOrganizer={p.isOrganizer} t={t} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="px-5 py-4 border-t border-border">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">RSVP</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={userCurrentStatus === "accepted" ? "default" : "outline"}
+                  onClick={() => handleRsvp("accepted")}
+                  className={userCurrentStatus === "accepted" ? "bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-300 dark:ring-green-700" : "text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-950"}
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {t("participants.accepted")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={userCurrentStatus === "tentative" ? "default" : "outline"}
+                  onClick={() => handleRsvp("tentative")}
+                  className={userCurrentStatus === "tentative" ? "bg-amber-600 hover:bg-amber-700 text-white ring-2 ring-amber-300 dark:ring-amber-700" : "text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"}
+                >
+                  <HelpCircle className="w-4 h-4 mr-1" />
+                  {t("participants.tentative")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={userCurrentStatus === "declined" ? "default" : "outline"}
+                  onClick={() => handleRsvp("declined")}
+                  className={userCurrentStatus === "declined" ? "bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-300 dark:ring-red-700" : "text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950"}
+                >
+                  <XCircle className="w-4 h-4 mr-1" />
+                  {t("participants.declined")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={isEdit ? t("events.edit") : t("events.create")} className="relative bg-background border border-border rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="text-lg font-semibold">
+            {isEdit ? t("events.edit") : t("events.create")}
+          </h2>
+          <button onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors" aria-label={t("form.cancel")}>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="px-5 py-4 space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1 block">{t("form.title")}</label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t("form.title")}
+              maxLength={500}
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-1 block">{t("form.description")}</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("form.description")}
+              rows={3}
+              maxLength={10000}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-1 block">{t("form.location")}</label>
+            <Input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={t("form.location")}
+              maxLength={500}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-1 block">
+              <span className="flex items-center gap-1.5">
+                <Users className="w-4 h-4" />
+                {t("participants.title")}
+              </span>
+            </label>
+            <ParticipantInput
+              participants={attendees}
+              onAdd={handleAddAttendee}
+              onRemove={handleRemoveAttendee}
+            />
+            {isEdit && statusCounts && (existingParticipants.length > 0) && (
+              <p className="text-xs text-muted-foreground mt-1.5">
+                {t("participants.status_summary", {
+                  accepted: statusCounts.accepted,
+                  pending: statusCounts.tentative + statusCounts['needs-action'],
+                })}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="allDay"
+              checked={allDay}
+              onChange={(e) => setAllDay(e.target.checked)}
+              className="rounded border-input"
+            />
+            <label htmlFor="allDay" className="text-sm">{t("form.all_day_event")}</label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("form.start_date")}</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            {!allDay && (
+              <div>
+                <label className="text-sm font-medium mb-1 block">{t("form.start_time")}</label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("form.end_date")}</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            {!allDay && (
+              <div>
+                <label className="text-sm font-medium mb-1 block">{t("form.end_time")}</label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            )}
+          </div>
+
+          {calendars.length > 1 && (
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("form.calendar_select")}</label>
+              <select
+                value={calendarId}
+                onChange={(e) => setCalendarId(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                {calendars.map((cal) => (
+                  <option key={cal.id} value={cal.id}>
+                    {cal.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("recurrence.title")}</label>
+              <select
+                value={recurrence}
+                onChange={(e) => setRecurrence(e.target.value as RecurrenceOption)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="none">{t("recurrence.none")}</option>
+                <option value="daily">{t("recurrence.daily")}</option>
+                <option value="weekly">{t("recurrence.weekly")}</option>
+                <option value="monthly">{t("recurrence.monthly")}</option>
+                <option value="yearly">{t("recurrence.yearly")}</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("alerts.title")}</label>
+              <select
+                value={alert}
+                onChange={(e) => setAlert(e.target.value as AlertOption)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="none">{t("alerts.none")}</option>
+                <option value="at_time">{t("alerts.at_time")}</option>
+                <option value="5">{t("alerts.minutes_before", { count: 5 })}</option>
+                <option value="15">{t("alerts.minutes_before", { count: 15 })}</option>
+                <option value="30">{t("alerts.minutes_before", { count: 30 })}</option>
+                <option value="60">{t("alerts.hours_before", { count: 1 })}</option>
+                <option value="1440">{t("alerts.days_before", { count: 1 })}</option>
+              </select>
+            </div>
+          </div>
+
+          {attendees.length > 0 && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="sendInvitations"
+                checked={sendInvitations}
+                onChange={(e) => setSendInvitations(e.target.checked)}
+                className="rounded border-input"
+              />
+              <label htmlFor="sendInvitations" className="text-sm">
+                {t("participants.send_invitations")}
+              </label>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between px-5 py-4 border-t border-border">
+          {isEdit && onDelete ? (
+            showDeleteConfirm ? (
+              <div className="flex items-center gap-2">
+                <div>
+                  <span className="text-sm text-red-600 dark:text-red-400">
+                    {t("form.delete_confirm")}
+                  </span>
+                  {hasParticipants && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("participants.cancel_notification")}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { onDelete(event!.id, hasParticipants || undefined); onClose(); }}
+                  className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700"
+                >
+                  {t("events.delete")}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+                  {t("form.cancel")}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="text-red-600 dark:text-red-400"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                {t("events.delete")}
+              </Button>
+            )
+          ) : (
+            <div />
+          )}
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>
+              {t("form.cancel")}
+            </Button>
+            <Button onClick={handleSave} disabled={!title.trim()}>
+              {t("form.save")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ status, isOrganizer, t }: {
+  status: CalendarParticipant['participationStatus'];
+  isOrganizer: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (isOrganizer) {
+    return <span className="text-xs text-primary">{t("participants.organizer")}</span>;
+  }
+  const colors: Record<string, string> = {
+    accepted: "text-green-600 dark:text-green-400",
+    declined: "text-red-600 dark:text-red-400",
+    tentative: "text-amber-600 dark:text-amber-400",
+    "needs-action": "text-muted-foreground",
+  };
+  const labels: Record<string, string> = {
+    accepted: "participants.accepted",
+    declined: "participants.declined",
+    tentative: "participants.tentative",
+    "needs-action": "participants.needs_action",
+  };
+  return <span className={`text-xs ${colors[status] || ""}`}>{t(labels[status] || labels["needs-action"])}</span>;
+}

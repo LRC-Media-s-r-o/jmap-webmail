@@ -3,6 +3,11 @@ import { persist } from 'zustand/middleware';
 import { JMAPClient } from '@/lib/jmap/client';
 import { useEmailStore } from './email-store';
 import { useIdentityStore } from './identity-store';
+import { useContactStore } from './contact-store';
+import { useVacationStore } from './vacation-store';
+import { useCalendarStore } from './calendar-store';
+import { useFilterStore } from './filter-store';
+import { debug } from '@/lib/debug';
 import type { Identity } from '@/lib/jmap/types';
 
 interface AuthState {
@@ -15,7 +20,7 @@ interface AuthState {
   identities: Identity[];
   primaryIdentity: Identity | null;
 
-  login: (serverUrl: string, username: string, password: string) => Promise<boolean>;
+  login: (serverUrl: string, username: string, password: string, totp?: string) => Promise<boolean>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   clearError: () => void;
@@ -33,12 +38,13 @@ export const useAuthStore = create<AuthState>()(
       identities: [],
       primaryIdentity: null,
 
-      login: async (serverUrl, username, password) => {
+      login: async (serverUrl, username, password, totp) => {
+        const effectivePassword = totp ? `${password}$${totp}` : password;
         set({ isLoading: true, error: null });
 
         try {
           // Create JMAP client
-          const client = new JMAPClient(serverUrl, username, password);
+          const client = new JMAPClient(serverUrl, username, effectivePassword);
 
           // Try to connect
           await client.connect();
@@ -49,6 +55,39 @@ export const useAuthStore = create<AuthState>()(
 
           // Sync identities to identity store
           useIdentityStore.getState().setIdentities(identities);
+
+          // Fetch contacts if server supports JMAP Contacts
+          if (client.supportsContacts()) {
+            const contactStore = useContactStore.getState();
+            contactStore.setSupportsSync(true);
+            contactStore.fetchAddressBooks(client).catch((err) => console.error('Failed to fetch address books:', err));
+            contactStore.fetchContacts(client).catch((err) => console.error('Failed to fetch contacts:', err));
+          } else {
+            useContactStore.getState().setSupportsSync(false);
+          }
+
+          // Initialize vacation responder if supported
+          const vacationStore = useVacationStore.getState();
+          if (client.supportsVacationResponse()) {
+            vacationStore.setSupported(true);
+            vacationStore.fetchVacationResponse(client).catch((err) => console.error('Failed to fetch vacation response:', err));
+          } else {
+            vacationStore.setSupported(false);
+          }
+
+          // Initialize calendar if supported
+          if (client.supportsCalendars()) {
+            const calendarStore = useCalendarStore.getState();
+            calendarStore.setSupported(true);
+            calendarStore.fetchCalendars(client).catch((err) => console.error('Failed to fetch calendars:', err));
+          }
+
+          // Initialize Sieve filters if supported
+          if (client.supportsSieve()) {
+            const filterStore = useFilterStore.getState();
+            filterStore.setSupported(true);
+            filterStore.fetchFilters(client).catch((err) => debug.error('Failed to fetch filters:', err));
+          }
 
           // Success - save state (but NOT the password)
           set({
@@ -64,7 +103,7 @@ export const useAuthStore = create<AuthState>()(
 
           return true;
         } catch (error) {
-          console.error('Login error:', error);
+          debug.error('Login error:', error);
           let errorKey = 'generic';
 
           // Map common errors to translation keys
@@ -124,6 +163,18 @@ export const useAuthStore = create<AuthState>()(
 
         // Clear identity store state
         useIdentityStore.getState().clearIdentities();
+
+        // Clear contact store state
+        useContactStore.getState().clearContacts();
+
+        // Clear vacation store state
+        useVacationStore.getState().clearState();
+
+        // Clear calendar store state
+        useCalendarStore.getState().clearState();
+
+        // Clear filter store state
+        useFilterStore.getState().clearState();
       },
 
       checkAuth: async () => {

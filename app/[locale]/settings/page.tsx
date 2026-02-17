@@ -9,21 +9,35 @@ import { AppearanceSettings } from '@/components/settings/appearance-settings';
 import { EmailSettings } from '@/components/settings/email-settings';
 import { AccountSettings } from '@/components/settings/account-settings';
 import { IdentitySettings } from '@/components/settings/identity-settings';
+import { VacationSettings } from '@/components/settings/vacation-settings';
+import { CalendarSettings } from '@/components/settings/calendar-settings';
+import { FilterSettings } from '@/components/settings/filter-settings';
+import { TemplateSettings } from '@/components/settings/template-settings';
 import { AdvancedSettings } from '@/components/settings/advanced-settings';
+import { useAuthStore } from '@/stores/auth-store';
 import { cn } from '@/lib/utils';
 
-type Tab = 'appearance' | 'email' | 'account' | 'identities' | 'advanced';
+type Tab = 'appearance' | 'email' | 'account' | 'identities' | 'vacation' | 'calendar' | 'filters' | 'templates' | 'advanced';
 
 export default function SettingsPage() {
   const router = useRouter();
   const t = useTranslations('settings');
+  const { client } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>('appearance');
+
+  const supportsVacation = client?.supportsVacationResponse() ?? false;
+  const supportsCalendar = client?.supportsCalendars() ?? false;
+  const supportsSieve = client?.supportsSieve() ?? false;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'appearance', label: t('tabs.appearance') },
     { id: 'email', label: t('tabs.email') },
     { id: 'account', label: t('tabs.account') },
     { id: 'identities', label: t('tabs.identities') },
+    ...(supportsVacation ? [{ id: 'vacation' as Tab, label: t('tabs.vacation') }] : []),
+    ...(supportsCalendar ? [{ id: 'calendar' as Tab, label: t('tabs.calendar') }] : []),
+    ...(supportsSieve ? [{ id: 'filters' as Tab, label: t('tabs.filters') }] : []),
+    { id: 'templates', label: t('tabs.templates') },
     { id: 'advanced', label: t('tabs.advanced') },
   ];
 
@@ -82,6 +96,10 @@ export default function SettingsPage() {
             {activeTab === 'email' && <EmailSettings />}
             {activeTab === 'account' && <AccountSettings />}
             {activeTab === 'identities' && <IdentitySettings />}
+            {activeTab === 'vacation' && <VacationSettings />}
+            {activeTab === 'calendar' && <CalendarSettings />}
+            {activeTab === 'filters' && <FilterSettings />}
+            {activeTab === 'templates' && <TemplateSettings />}
             {activeTab === 'advanced' && <AdvancedSettings />}
           </div>
         </div>

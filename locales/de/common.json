@@ -11,14 +11,19 @@
     "error": {
       "invalid_credentials": "Ungültige E-Mail-Adresse oder Passwort",
       "connection_failed": "Verbindung zum Server fehlgeschlagen",
-      "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "totp_invalid": "Ungültiger Authentifizierungscode. Überprüfen Sie Ihre Authenticator-App."
     },
     "config_error": {
       "title": "Konfigurationsfehler",
       "fetch_failed": "Die Anwendungskonfiguration kann nicht geladen werden. Bitte versuchen Sie es später erneut.",
       "server_not_configured": "Der E-Mail-Server wurde nicht konfiguriert. Bitte kontaktieren Sie Ihren Administrator."
     },
-    "remove_from_history": "Aus Verlauf entfernen"
+    "remove_from_history": "Aus Verlauf entfernen",
+    "totp_toggle": "Ich habe Zwei-Faktor-Authentifizierung",
+    "totp_label": "Authentifizierungscode",
+    "totp_placeholder": "000000",
+    "totp_hide": "Zwei-Faktor-Authentifizierung ausblenden"
   },
   "sidebar": {
     "close": "Schließen",
@@ -26,6 +31,8 @@
     "search_placeholder": "E-Mails durchsuchen...",
     "storage": "Speicher",
     "sign_out": "Abmelden",
+    "contacts": "Kontakte",
+    "calendar": "Kalender",
     "settings": "Einstellungen",
     "loading_mailboxes": "Postfächer werden geladen...",
     "push_connected": "Echtzeit-Updates aktiv",
@@ -58,7 +65,8 @@
       "compose": "Verfassen",
       "go_back": "Zurück"
     },
-    "clear_search": "Suche löschen"
+    "clear_search": "Suche löschen",
+    "vacation_active": "Abwesenheitsnotiz ist aktiv"
   },
   "email_list": {
     "no_emails": "Keine E-Mails",
@@ -66,8 +74,8 @@
     "loading": "E-Mails werden geladen...",
     "unread": "ungelesen",
     "to_me": "An mich",
-    "to_recipients": "An {{count}} Empfänger",
-    "and_others": "und {{count}} weitere",
+    "to_recipients": "An {count} Empfänger",
+    "and_others": "und {count} weitere",
     "draft": "Entwurf",
     "starred": "Mit Stern",
     "conversations_count": "{count} von {total} Unterhaltungen",
@@ -217,6 +225,23 @@
       "success_mailto": "Abmeldeanfrage an Ihr E-Mail-Programm gesendet",
       "error": "Abmeldung nicht möglich",
       "dismiss": "Schließen"
+    },
+    "calendar_invitation": {
+      "loading": "Veranstaltungsdetails werden geladen…",
+      "title": "Kalendereinladung",
+      "cancelled_title": "Veranstaltung abgesagt",
+      "organizer": "Organisiert von {name}",
+      "attendees": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}}",
+      "accept": "Annehmen",
+      "maybe": "Vielleicht",
+      "decline": "Ablehnen",
+      "add_to_calendar": "Zum Kalender hinzufügen",
+      "added": "Zum Kalender hinzugefügt",
+      "rsvp_sent": "Antwort gesendet",
+      "parse_error": "Einladung konnte nicht gelesen werden",
+      "no_calendar": "Kalender nicht verfügbar",
+      "select_calendar": "Kalender auswählen",
+      "already_in_calendar": "Bereits in deinem Kalender"
     }
   },
   "email_composer": {
@@ -256,14 +281,16 @@
     "no_subject": "(Kein Betreff)",
     "unknown_sender": "Unbekannt",
     "quote": {
-      "reply_header": "Am {{date}} schrieb {{sender}}:",
+      "reply_header": "Am {date} schrieb {sender}:",
       "forward_header": "---------- Weitergeleitete Nachricht ----------",
-      "from": "Von: {{sender}}",
-      "date": "Datum: {{date}}",
-      "subject": "Betreff: {{subject}}",
-      "to": "An: {{recipients}}"
+      "from": "Von: {sender}",
+      "date": "Datum: {date}",
+      "subject": "Betreff: {subject}",
+      "to": "An: {recipients}"
     },
-    "remove_sub_address": "Sub-Adresse entfernen"
+    "remove_sub_address": "Sub-Adresse entfernen",
+    "use_template": "Vorlage",
+    "save_as_template": "Als Vorlage speichern"
   },
   "common": {
     "loading": "Lädt...",
@@ -308,11 +335,20 @@
     "identity_created": "Identität erfolgreich erstellt",
     "identity_updated": "Identität erfolgreich aktualisiert",
     "identity_deleted": "Identität gelöscht",
-    "identity_create_failed": "Identität erstellen fehlgeschlagen: {{error}}",
-    "identity_update_failed": "Identität aktualisieren fehlgeschlagen: {{error}}",
-    "identity_delete_failed": "Identität löschen fehlgeschlagen: {{error}}",
+    "identity_create_failed": "Identität erstellen fehlgeschlagen: {error}",
+    "identity_update_failed": "Identität aktualisieren fehlgeschlagen: {error}",
+    "identity_delete_failed": "Identität löschen fehlgeschlagen: {error}",
     "identity_unauthorized": "Sie sind nicht autorisiert, von dieser E-Mail-Adresse zu senden",
-    "identity_not_found": "Identität nicht gefunden"
+    "identity_not_found": "Identität nicht gefunden",
+    "vacation_saved": "Abwesenheitsnotiz-Einstellungen gespeichert",
+    "vacation_save_failed": "Fehler beim Speichern der Abwesenheitsnotiz-Einstellungen",
+    "filters_saved": "Filter erfolgreich gespeichert",
+    "filters_save_failed": "Fehler beim Speichern der Filter",
+    "filters_deleted": "Filterregel gelöscht",
+    "templates_exported": "Vorlagen erfolgreich exportiert",
+    "templates_imported": "{count, plural, one {# Vorlage importiert} other {# Vorlagen importiert}}",
+    "templates_import_errors": "Einige Vorlagen konnten nicht importiert werden",
+    "templates_import_empty": "Keine Vorlagen in der Datei gefunden"
   },
   "date": {
     "today": "Heute",
@@ -322,12 +358,12 @@
     "this_month": "Dieser Monat",
     "older": "Älter",
     "just_now": "Gerade eben",
-    "minutes_ago": "Vor {{count}} Minute",
-    "minutes_ago_plural": "Vor {{count}} Minuten",
-    "hours_ago": "Vor {{count}} Stunde",
-    "hours_ago_plural": "Vor {{count}} Stunden",
-    "days_ago": "Vor {{count}} Tag",
-    "days_ago_plural": "Vor {{count}} Tagen"
+    "minutes_ago": "Vor {count} Minute",
+    "minutes_ago_plural": "Vor {count} Minuten",
+    "hours_ago": "Vor {count} Stunde",
+    "hours_ago_plural": "Vor {count} Stunden",
+    "days_ago": "Vor {count} Tag",
+    "days_ago_plural": "Vor {count} Tagen"
   },
   "language": {
     "title": "Sprache",
@@ -365,7 +401,11 @@
       "privacy": "Datenschutz & Sicherheit",
       "account": "Konto",
       "identities": "Identitäten",
-      "advanced": "Erweitert"
+      "vacation": "Abwesenheitsnotiz",
+      "advanced": "Erweitert",
+      "calendar": "Kalender",
+      "filters": "Filter",
+      "templates": "Vorlagen"
     },
     "appearance": {
       "title": "Darstellung",
@@ -534,20 +574,20 @@
       "description": "Zeigen Sie Ihre Kontoinformationen an",
       "email": {
         "label": "E-Mail-Adresse",
-        "value": "{{email}}"
+        "value": "{email}"
       },
       "server": {
         "label": "JMAP-Server",
-        "value": "{{server}}"
+        "value": "{server}"
       },
       "storage": {
         "label": "Speichernutzung",
-        "used": "{{used}} von {{total}} verwendet",
-        "percentage": "{{percent}}% verwendet"
+        "used": "{used} von {total} verwendet",
+        "percentage": "{percent}% verwendet"
       },
       "last_sync": {
         "label": "Letzte Synchronisierung",
-        "value": "{{time}}"
+        "value": "{time}"
       }
     },
     "identities": {
@@ -558,13 +598,56 @@
         "description": "Für das Senden konfigurierte E-Mail-Adressen",
         "count_zero": "Keine Identitäten",
         "count_one": "1 Identität",
-        "count_other": "{{count}} Identitäten"
+        "count_other": "{count} Identitäten"
       },
       "manage": "Identitäten verwalten",
       "sub_addressing": {
         "label": "Sub-Adressierung",
         "description": "Verwenden Sie Tags wie benutzer+tag@domain.de, um eingehende E-Mails zu organisieren",
         "learn_more": "Mehr erfahren"
+      }
+    },
+    "vacation": {
+      "title": "Abwesenheitsnotiz",
+      "description": "Automatisch auf eingehende E-Mails antworten, während Sie abwesend sind",
+      "loading": "Abwesenheitseinstellungen werden geladen...",
+      "not_supported": "Ihr Mailserver unterstützt keine Abwesenheitsantworten.",
+      "fetch_error": "Fehler beim Laden der Abwesenheitseinstellungen. Bitte versuchen Sie es erneut.",
+      "status": {
+        "label": "Abwesenheitsnotiz",
+        "description": "Senden Sie eine automatische Antwort an Personen, die Ihnen eine E-Mail senden",
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
+      },
+      "date_range": {
+        "title": "Zeitraum",
+        "description": "Optional die automatische Antwort auf einen bestimmten Zeitraum beschränken",
+        "start": "Startdatum",
+        "start_description": "Leer lassen für kein Startlimit",
+        "end": "Enddatum",
+        "end_description": "Leer lassen für kein Endlimit"
+      },
+      "message": {
+        "title": "Automatische Antwortnachricht",
+        "description": "Die Nachricht, die als Antwort gesendet wird",
+        "subject_label": "Betreff",
+        "subject_description": "Betreffzeile der automatischen Antwort",
+        "subject_placeholder": "Abwesenheitsnotiz",
+        "body_label": "Nachrichtentext",
+        "body_description": "Nur-Text-Nachrichteninhalt",
+        "body_placeholder": "Vielen Dank für Ihre E-Mail. Ich bin derzeit nicht im Büro und werde nach meiner Rückkehr antworten."
+      },
+      "preview": {
+        "title": "Vorschau",
+        "show": "Vorschau anzeigen",
+        "hide": "Vorschau ausblenden"
+      },
+      "save": "Änderungen speichern",
+      "saving": "Speichern...",
+      "warnings": {
+        "end_before_start": "Das Enddatum muss nach dem Startdatum liegen",
+        "start_in_past": "Das Startdatum liegt in der Vergangenheit",
+        "empty_body": "Der Nachrichtentext ist leer — Empfänger erhalten eine leere Antwort"
       }
     },
     "advanced": {
@@ -593,6 +676,151 @@
         "label": "Einstellungen importieren",
         "description": "Einstellungen aus JSON-Datei hochladen",
         "button": "Importieren"
+      }
+    },
+    "filters": {
+      "title": "E-Mail-Filter",
+      "description": "Erstellen Sie Regeln, um eingehende E-Mails automatisch zu sortieren, zu kennzeichnen und zu verwalten",
+      "add_rule": "Regel hinzufügen",
+      "no_rules": "Keine Filterregeln",
+      "no_rules_description": "Erstellen Sie Regeln, um Ihre eingehenden E-Mails automatisch zu organisieren",
+      "edit_rule": "Regel bearbeiten",
+      "new_rule": "Neue Regel",
+      "delete_rule": "Regel löschen",
+      "delete_confirm": "Sind Sie sicher, dass Sie diese Regel löschen möchten?",
+      "enable": "Aktivieren",
+      "disable": "Deaktivieren",
+      "raw_editor": "Sieve-Skripteditor",
+      "raw_editor_warning": "Das Bearbeiten des Sieve-Skripts kann die visuelle Regelbearbeitung beeinträchtigen. Änderungen hier überschreiben den visuellen Builder.",
+      "validate": "Validieren",
+      "validation_success": "Das Skript ist gültig",
+      "validation_error": "Das Skript enthält Fehler",
+      "save": "Regeln speichern",
+      "saving": "Wird gespeichert...",
+      "saved": "Filter erfolgreich gespeichert",
+      "save_failed": "Fehler beim Speichern der Filter",
+      "loading": "Filter werden geladen...",
+      "not_supported": "Ihr Mailserver unterstützt keine E-Mail-Filter.",
+      "rule_name": "Regelname",
+      "rule_name_placeholder": "z.B. Newsletter sortieren",
+      "match_all": "ALLE Bedingungen erfüllen",
+      "match_any": "EINE beliebige Bedingung erfüllen",
+      "conditions": "Bedingungen",
+      "add_condition": "Bedingung hinzufügen",
+      "actions": "Aktionen",
+      "add_action": "Aktion hinzufügen",
+      "stop_processing": "Verarbeitung nachfolgender Regeln stoppen",
+      "condition_fields": {
+        "from": "Von",
+        "to": "An",
+        "cc": "Cc",
+        "subject": "Betreff",
+        "header": "Benutzerdefinierter Header",
+        "size": "Größe",
+        "body": "Nachrichtentext"
+      },
+      "comparators": {
+        "contains": "enthält",
+        "not_contains": "enthält nicht",
+        "is": "ist genau",
+        "not_is": "ist nicht",
+        "starts_with": "beginnt mit",
+        "ends_with": "endet mit",
+        "matches": "entspricht dem Muster",
+        "greater_than": "ist größer als",
+        "less_than": "ist kleiner als"
+      },
+      "action_types": {
+        "move": "In Ordner verschieben",
+        "copy": "In Ordner kopieren",
+        "forward": "Weiterleiten an",
+        "mark_read": "Als gelesen markieren",
+        "star": "Nachricht markieren",
+        "add_label": "Label hinzufügen",
+        "discard": "Lautlos löschen",
+        "reject": "Mit Nachricht ablehnen",
+        "keep": "Im Posteingang behalten",
+        "stop": "Verarbeitung stoppen"
+      },
+      "move_to_folder": "Ordner auswählen",
+      "copy_to_folder": "Ordner auswählen",
+      "forward_to": "An E-Mail-Adresse weiterleiten",
+      "forward_placeholder": "email@beispiel.de",
+      "reject_message": "Ablehnungsnachricht",
+      "reject_placeholder": "Ihre E-Mail wurde abgelehnt",
+      "label_name": "Label-Name",
+      "label_placeholder": "z.B. wichtig",
+      "header_name": "Header-Name",
+      "header_placeholder": "z.B. X-Mailing-List",
+      "size_bytes": "Größe in Bytes",
+      "size_placeholder": "z.B. 1000000",
+      "system_managed": "Systemverwaltete Regel",
+      "opaque_warning": "Dieses Skript wurde außerhalb des visuellen Builders bearbeitet. Nur die Sieve-Skriptbearbeitung ist verfügbar.",
+      "open_sieve_editor": "Sieve-Skript-Editor öffnen",
+      "fetch_error": "Filter konnten nicht geladen werden",
+      "and": "und",
+      "or": "oder",
+      "cancel": "Abbrechen",
+      "confirm_delete": "Löschen",
+      "rule_list": "Filterregeln",
+      "drag_to_reorder": "Ziehen zum Sortieren",
+      "match_type": "Übereinstimmungstyp",
+      "reset_to_visual": "Zum visuellen Builder zurücksetzen",
+      "reset_warning": "Dies verwirft das aktuelle Skript und beginnt von vorne.",
+      "confirm_reset": "Zurücksetzen",
+      "validation_empty_name": "Regelname ist erforderlich",
+      "validation_empty_conditions": "Mindestens eine Bedingung mit einem Wert ist erforderlich",
+      "validation_empty_actions": "Mindestens eine Aktion ist erforderlich",
+      "sieve_editor": {
+        "title": "Sieve-Skript-Editor",
+        "warning": "Das Bearbeiten des Sieve-Skripts kann die visuelle Regelbearbeitung beeinträchtigen. Änderungen hier überschreiben den visuellen Builder.",
+        "script_content": "Sieve-Skript",
+        "valid": "Skript ist gültig",
+        "invalid": "Skript enthält Fehler",
+        "save_warning": "Das Speichern überschreibt alle visuellen Regeln. Dies kann nicht rückgängig gemacht werden. Klicken Sie erneut auf Speichern zur Bestätigung.",
+        "validating": "Wird validiert...",
+        "validate": "Validieren",
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "confirm_save": "Speichern bestätigen",
+        "validation_failed": "Validierungsanfrage fehlgeschlagen"
+      },
+      "rule_summary": {
+        "conditions_count": "{count, plural, one {# Bedingung} other {# Bedingungen}}",
+        "actions_count": "{count, plural, one {# Aktion} other {# Aktionen}}"
+      }
+    },
+    "templates": {
+      "title": "E-Mail-Vorlagen",
+      "description": "Erstellen Sie wiederverwendbare E-Mail-Vorlagen mit Platzhaltervariablen",
+      "add": "Neue Vorlage",
+      "edit": "Vorlage bearbeiten",
+      "name": "Vorlagenname",
+      "name_placeholder": "z.B.: Nachfass-E-Mail",
+      "category": "Kategorie",
+      "category_placeholder": "z.B.: Arbeit, Persönlich",
+      "subject": "Betreff",
+      "subject_placeholder": "E-Mail-Betreffzeile",
+      "body": "Text",
+      "body_placeholder": "E-Mail-Inhalt...",
+      "recipients_placeholder": "email@example.com",
+      "identity": "Senden als",
+      "default_identity": "Standard-Identität",
+      "favorite": "Favorit",
+      "cancel": "Abbrechen",
+      "create": "Erstellen",
+      "update": "Aktualisieren",
+      "confirm_delete": "Löschen",
+      "no_templates": "Keine Vorlagen",
+      "manage": "Vorlagen verwalten",
+      "count": "{count, plural, one {# Vorlage} other {# Vorlagen}}",
+      "export_import": "Exportieren und Importieren",
+      "export_import_description": "Sichern Sie Ihre Vorlagen oder übertragen Sie sie auf ein anderes Gerät",
+      "export": "Exportieren",
+      "import": "Importieren",
+      "validation": {
+        "empty": "Vorlagenname ist erforderlich",
+        "too_long": "Vorlagenname darf maximal 200 Zeichen haben"
       }
     }
   },
@@ -628,7 +856,7 @@
     "not_spam": "Kein Spam",
     "color_tag": "Farb-Tag",
     "remove_color": "Farbe entfernen",
-    "items_selected": "{{count}} E-Mails ausgewählt"
+    "items_selected": "{count} E-Mails ausgewählt"
   },
   "shortcuts": {
     "title": "Tastaturkürzel",
@@ -637,7 +865,8 @@
       "navigation": "Navigation",
       "actions": "E-Mail-Aktionen",
       "global": "Global",
-      "threads": "Unterhaltungen"
+      "threads": "Unterhaltungen",
+      "composer": "Verfassen"
     },
     "navigation": {
       "next_email": "Nächste E-Mail",
@@ -665,6 +894,9 @@
     },
     "threads": {
       "expand_collapse": "Unterhaltung erweitern/einklappen"
+    },
+    "composer": {
+      "template_picker": "Vorlagenauswahl öffnen"
     }
   },
   "threads": {
@@ -742,5 +974,304 @@
       "identity_short": "über {name}",
       "subaddress_tag": "+{tag}"
     }
+  },
+  "templates": {
+    "picker_title": "Vorlage wählen",
+    "search_placeholder": "Vorlagen suchen...",
+    "section_favorites": "Favoriten",
+    "section_recent": "Zuletzt verwendet",
+    "section_uncategorized": "Sonstige",
+    "no_templates": "Keine Vorlagen",
+    "no_results": "Keine Vorlagen gefunden",
+    "fill_placeholders": "Platzhalterwerte ausfüllen",
+    "enter_value": "Wert eingeben...",
+    "preview": "Vorschau",
+    "insert_with_values": "Mit Werten einfügen",
+    "insert_raw": "Unverändert einfügen",
+    "copy_suffix": "(Kopie)",
+    "placeholder": "Variable",
+    "placeholders": {
+      "recipient_name": "Name des Empfängers",
+      "company": "Firmenname",
+      "date": "Heutiges Datum",
+      "day_of_week": "Wochentag",
+      "sender_name": "Ihr Name"
+    }
+  },
+  "contacts": {
+    "title": "Kontakte",
+    "search_placeholder": "Kontakte suchen...",
+    "create_new": "Neuer Kontakt",
+    "empty_state": "Keine Kontakte",
+    "empty_search": "Keine Kontakte gefunden",
+    "delete_confirm": "Möchten Sie diesen Kontakt wirklich löschen?",
+    "local_mode": "Kontakte werden lokal gespeichert (Server unterstützt kein JMAP Contacts)",
+    "back_to_mail": "Zurück zur E-Mail",
+    "tabs": {
+      "all": "Alle",
+      "groups": "Gruppen"
+    },
+    "detail": {
+      "emails": "E-Mail-Adressen",
+      "phones": "Telefonnummern",
+      "organizations": "Organisationen",
+      "addresses": "Adressen",
+      "notes": "Notizen",
+      "no_contact_selected": "Kontakt auswählen, um Details anzuzeigen",
+      "created": "Erstellt",
+      "updated": "Zuletzt aktualisiert"
+    },
+    "form": {
+      "create_title": "Neuer Kontakt",
+      "edit_title": "Kontakt bearbeiten",
+      "given_name": "Vorname",
+      "surname": "Nachname",
+      "email": "E-Mail",
+      "email_placeholder": "email@example.com",
+      "phone": "Telefon",
+      "phone_placeholder": "+49 30 1234 5678",
+      "organization": "Organisation",
+      "organization_placeholder": "Firmenname",
+      "note": "Notizen",
+      "note_placeholder": "Notiz hinzufügen...",
+      "context_work": "Arbeit",
+      "context_private": "Privat",
+      "add_email": "E-Mail hinzufügen",
+      "add_phone": "Telefon hinzufügen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "creating": "Wird erstellt...",
+      "updating": "Wird aktualisiert...",
+      "name_required": "Mindestens ein Vor- oder Nachname ist erforderlich",
+      "email_invalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "save_failed": "Kontakt konnte nicht gespeichert werden"
+    },
+    "groups": {
+      "create": "Neue Gruppe",
+      "edit": "Gruppe bearbeiten",
+      "empty": "Keine Gruppen",
+      "delete_confirm": "Möchten Sie diese Gruppe wirklich löschen?",
+      "name_label": "Gruppenname",
+      "name_placeholder": "z.B. Team, Familie",
+      "name_required": "Gruppenname ist erforderlich",
+      "save_failed": "Gruppe konnte nicht gespeichert werden",
+      "members_label": "Mitglieder",
+      "search_members": "Kontakte zum Hinzufügen suchen...",
+      "no_members": "Keine Mitglieder in dieser Gruppe",
+      "member_count": "{count, plural, =0 {Keine Mitglieder} one {1 Mitglied} other {# Mitglieder}}"
+    },
+    "import": {
+      "title": "Kontakte importieren",
+      "drop_hint": "Klicken Sie, um eine vCard-Datei auszuwählen",
+      "file_types": ".vcf- oder .vcard-Dateien",
+      "no_contacts": "Keine Kontakte in der Datei gefunden",
+      "parse_error": "vCard-Datei konnte nicht gelesen werden",
+      "found": "{count, plural, one {1 Kontakt gefunden} other {# Kontakte gefunden}}",
+      "duplicate": "Duplikat",
+      "select_all": "Alle auswählen",
+      "deselect_all": "Alle abwählen",
+      "selected": "{count, plural, one {1 ausgewählt} other {# ausgewählt}}",
+      "import_button": "Importieren",
+      "importing": "Wird importiert...",
+      "success": "{count, plural, one {1 Kontakt importiert} other {# Kontakte importiert}}",
+      "failed": "Import fehlgeschlagen",
+      "close": "Schließen",
+      "file_too_large": "Datei ist zu groß (max. 5 MB)"
+    },
+    "export": {
+      "title": "Kontakte exportieren",
+      "success": "{count, plural, one {1 Kontakt exportiert} other {# Kontakte exportiert}}"
+    },
+    "bulk": {
+      "selected": "{count, plural, one {1 ausgewählt} other {# ausgewählt}}",
+      "select_all": "Alle auswählen",
+      "delete": "Löschen",
+      "delete_confirm": "{count, plural, one {1 Kontakt} other {# Kontakte}} löschen?",
+      "deleted": "{count, plural, one {1 Kontakt gelöscht} other {# Kontakte gelöscht}}",
+      "add_to_group": "Zur Gruppe hinzufügen",
+      "choose_group": "Gruppe wählen",
+      "adding_contacts": "{count, plural, one {1 Kontakt} other {# Kontakte}} hinzufügen",
+      "added_to_group": "Kontakte zur Gruppe hinzugefügt",
+      "export": "Exportieren",
+      "clear": "Auswahl aufheben"
+    },
+    "toast": {
+      "created": "Kontakt erstellt",
+      "updated": "Kontakt aktualisiert",
+      "deleted": "Kontakt gelöscht",
+      "error_create": "Kontakt konnte nicht erstellt werden",
+      "error_update": "Kontakt konnte nicht aktualisiert werden",
+      "error_delete": "Kontakt konnte nicht gelöscht werden"
+    }
+  },
+  "calendar": {
+    "title": "Kalender",
+    "back_to_email": "Zurück zu E-Mails",
+    "my_calendars": "Meine Kalender",
+    "views": {
+      "month": "Monat",
+      "week": "Woche",
+      "day": "Tag",
+      "agenda": "Agenda",
+      "today": "Heute"
+    },
+    "events": {
+      "create": "Termin erstellen",
+      "edit": "Termin bearbeiten",
+      "delete": "Termin löschen",
+      "details": "Termindetails",
+      "no_events": "Keine Termine",
+      "all_day": "Ganztägig",
+      "more": "+{count} weitere",
+      "no_title": "(Kein Titel)",
+      "today_header": "Heute",
+      "tomorrow_header": "Morgen"
+    },
+    "form": {
+      "title": "Titel",
+      "description": "Beschreibung",
+      "location": "Ort",
+      "start_date": "Startdatum",
+      "end_date": "Enddatum",
+      "start_time": "Startzeit",
+      "end_time": "Endzeit",
+      "all_day_event": "Ganztägiger Termin",
+      "calendar_select": "Kalender",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete_confirm": "Sind Sie sicher, dass Sie diesen Termin löschen möchten?",
+      "color": "Farbe"
+    },
+    "participants": {
+      "title": "Teilnehmer",
+      "add": "Teilnehmer hinzufügen",
+      "organizer": "Organisator",
+      "attendee": "Teilnehmer",
+      "accepted": "Zugesagt",
+      "declined": "Abgelehnt",
+      "tentative": "Vorläufig",
+      "needs_action": "Antwort ausstehend",
+      "remove": "Entfernen",
+      "email_placeholder": "E-Mail-Adresse hinzufügen oder Kontakte durchsuchen",
+      "send_invitations": "Einladungen an Teilnehmer senden",
+      "status_summary": "{accepted} zugesagt, {pending} ausstehend",
+      "cancel_notification": "Die Teilnehmer werden über die Absage benachrichtigt",
+      "you_organizer": "Sie sind der Organisator",
+      "you_attendee": "Sie sind ein Teilnehmer",
+      "no_participants": "Keine Teilnehmer",
+      "count": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}}"
+    },
+    "recurrence": {
+      "title": "Wiederholung",
+      "none": "Keine Wiederholung",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich",
+      "every_n_days": "Alle {count} Tage",
+      "every_n_weeks": "Alle {count} Wochen",
+      "every_n_months": "Alle {count} Monate",
+      "until": "Bis",
+      "occurrences": "{count} Wiederholungen"
+    },
+    "alerts": {
+      "title": "Erinnerung",
+      "none": "Keine Erinnerung",
+      "at_time": "Zum Zeitpunkt des Termins",
+      "minutes_before": "{count, plural, one {# Minute vorher} other {# Minuten vorher}}",
+      "hours_before": "{count, plural, one {# Stunde vorher} other {# Stunden vorher}}",
+      "days_before": "{count, plural, one {# Tag vorher} other {# Tage vorher}}"
+    },
+    "settings": {
+      "title": "Kalendereinstellungen",
+      "default_view": "Standardansicht",
+      "week_starts_on": "Woche beginnt am",
+      "time_format": "Zeitformat",
+      "default_calendar": "Standardkalender",
+      "default_reminder": "Standarderinnerung",
+      "time_format_12h": "12-Stunden",
+      "time_format_24h": "24-Stunden",
+      "notifications_enabled": "Ereignisbenachrichtigungen",
+      "notifications_enabled_desc": "Benachrichtigungen für bevorstehende Termine anzeigen",
+      "notification_sound": "Benachrichtigungston",
+      "notification_sound_desc": "Ton für Kalenderbenachrichtigungen abspielen"
+    },
+    "days": {
+      "monday": "Montag",
+      "tuesday": "Dienstag",
+      "wednesday": "Mittwoch",
+      "thursday": "Donnerstag",
+      "friday": "Freitag",
+      "saturday": "Samstag",
+      "sunday": "Sonntag",
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa",
+      "sun": "So"
+    },
+    "notifications": {
+      "event_created": "Termin erstellt",
+      "event_updated": "Termin aktualisiert",
+      "event_deleted": "Termin gelöscht",
+      "calendar_created": "Kalender erstellt",
+      "calendar_deleted": "Kalender gelöscht",
+      "event_move_error": "Termin konnte nicht verschoben werden",
+      "alert_title": "Bevorstehender Termin",
+      "alert_now": "Beginnt jetzt",
+      "alert_in_minutes": "In {count} Min.",
+      "invitation_sent": "Einladungen gesendet",
+      "rsvp_updated": "Antwort aktualisiert",
+      "rsvp_error": "Antwort konnte nicht aktualisiert werden"
+    },
+    "status": {
+      "loading_calendars": "Kalender werden geladen...",
+      "loading_events": "Termine werden geladen..."
+    },
+    "nav_prev": "Zurück",
+    "nav_next": "Weiter",
+    "import": {
+      "title": "Kalender importieren",
+      "select_file": ".ics-Datei auswählen",
+      "drop_file": "oder Datei hier ablegen",
+      "supported_formats": "iCalendar (.ics) Dateien werden unterstützt",
+      "parsing": "Kalenderdatei wird analysiert...",
+      "parsed_events": "{count} Termine gefunden",
+      "no_events": "Keine Termine in der Datei gefunden",
+      "select_all": "Alle auswählen",
+      "deselect_all": "Alle abwählen",
+      "target_calendar": "In Kalender importieren",
+      "import_button": "Auswahl importieren",
+      "importing": "Termine werden importiert...",
+      "success": "{count} Termine erfolgreich importiert",
+      "error": "Kalender konnte nicht importiert werden",
+      "file_too_large": "Datei überschreitet das 5-MB-Limit",
+      "invalid_format": "Ungültiges Kalenderdateiformat"
+    }
+  },
+  "advanced_search": {
+    "title": "Erweiterte Suche",
+    "from": "Von",
+    "from_placeholder": "E-Mail oder Name des Absenders",
+    "to": "An",
+    "to_placeholder": "E-Mail oder Name des Empfängers",
+    "subject": "Betreff",
+    "subject_placeholder": "Betreff enthält...",
+    "body": "Nachricht",
+    "has_attachment": "Anhänge",
+    "date_after": "Nach dem",
+    "date_before": "Vor dem",
+    "starred": "Markiert",
+    "unread": "Ungelesen",
+    "read": "Gelesen",
+    "yes": "Ja",
+    "no": "Nein",
+    "clear": "Löschen",
+    "clear_all": "Alle löschen",
+    "filters_active": "{count} Filter",
+    "filters_active_plural": "{count} Filter",
+    "toggle_filters": "Filter"
   }
 }

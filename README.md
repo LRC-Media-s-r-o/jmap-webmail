@@ -25,7 +25,8 @@ This webmail client is designed to work seamlessly with [**Stalwart Mail Server*
 - Mark as read/unread, star/unstar
 - Archive and delete with configurable behavior
 - Color tags/labels for email organization
-- Full-text search
+- Advanced search with JMAP filter panel, search chips, and cross-mailbox queries
+- Virtual scrolling for large email lists
 
 ### User Interface
 - Clean, minimalist three-pane layout
@@ -43,18 +44,79 @@ This webmail client is designed to work seamlessly with [**Stalwart Mail Server*
 - Live email arrival notifications
 - Connection status indicator
 
+### Identity Management
+- Multiple sender identities with per-identity signatures
+- Sub-addressing support (user+tag@domain.com) with tag suggestions
+- Identity badges in email viewer and list
+
+### Address Book
+- Contact management with search and filtering
+- JMAP server sync (RFC 9553/9610) with local fallback
+- Email autocomplete from contacts in composer
+- Contact groups/lists with group expansion in composer
+- vCard import/export (RFC 6350) with duplicate detection
+- Bulk operations (multi-select, delete, group add, export)
+
+### Calendar
+- JMAP Calendar integration (RFC 8984) with capability detection
+- Month, week, day, and agenda views
+- Event create, edit, and delete with recurrence rules and reminders
+- Participant scheduling with iTIP invitations (organizer/attendee roles, RSVP)
+- Inline calendar invitation banner in email viewer (auto-detect .ics attachments, RSVP, import)
+- Multi-day events spanning across days, column-based overlap layout
+- Mini-calendar sidebar with calendar visibility toggles
+- Locale-aware date formatting (respects user's language)
+- Settings for first day of week, time format (12h/24h), and default view
+- Drag-and-drop rescheduling (week/day time snap, month date move)
+- iCalendar (.ics) file import with event preview and bulk create
+- Real-time updates via JMAP push notifications
+- Event notifications with client-side alert evaluation and toast display
+- Configurable notification sound and enable/disable toggles
+- Keyboard shortcuts: m/w/d/a (views), t (today), n (new event), arrows (navigate)
+
+### Email Templates
+- Reusable email templates with category organization (General, Business, Personal, Support, Follow-up)
+- Dynamic placeholder variables (`{{recipientName}}`, `{{date}}`, etc.) with auto-fill from composer context
+- Template picker in compose toolbar with search and category filter
+- Custom placeholder prompt when inserting templates
+- Template manager for creating, editing, duplicating, and deleting templates
+- Settings tab for template management
+
+### Email Filters
+- Server-side email filtering with JMAP Sieve Scripts (RFC 9661)
+- Visual rule builder with conditions (From, To, Subject, Size, Body, etc.) and actions (Move, Forward, Mark read, Star, Discard, Reject, etc.)
+- Raw Sieve script editor for advanced users with syntax validation
+- Auto-save on rule changes with rollback on failure
+- Drag-and-drop rule reordering
+- Reset opaque scripts back to visual builder
+- Capability-gated (only shown when server supports Sieve)
+
+### Vacation Responder
+- JMAP VacationResponse management with date range scheduling
+- Dedicated settings tab with message configuration
+- Sidebar indicator when vacation auto-reply is active
+
 ### Security & Privacy
 - External content blocked by default
 - Trusted senders list for automatic image loading
 - HTML sanitization with DOMPurify
 - SPF/DKIM/DMARC status indicators
 - No password storage (session-based auth)
+- TOTP two-factor authentication support
 - Shared folder support with proper permissions
+- Newsletter unsubscribe support (RFC 2369)
+- CSP headers and security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy)
 
 ### Internationalization
 - 8 language support: English, French, Japanese, Spanish, Italian, German, Dutch, Portuguese
 - Automatic browser language detection
 - Persistent language preference
+
+### Deployment
+- Docker support with multi-stage build and standalone output
+- Runtime environment variables (no rebuild needed for config changes)
+- Health check endpoint for container orchestration
+- Structured server-side logging (text/JSON format)
 
 ## Tech Stack
 
@@ -124,6 +186,19 @@ npm run build
 npm start
 ```
 
+### Docker
+
+```bash
+# Using docker-compose
+cp .env.example .env.local
+# Edit .env.local with your JMAP_SERVER_URL
+docker compose up -d
+
+# Or build manually
+docker build -t jmap-webmail .
+docker run -p 3000:3000 -e JMAP_SERVER_URL=https://mail.example.com jmap-webmail
+```
+
 ## Keyboard Shortcuts
 
 | Key | Action |
@@ -141,6 +216,7 @@ npm start
 | `u` | Mark as unread |
 | `/` | Focus search |
 | `x` | Expand/collapse thread |
+| `Ctrl+Shift+T` | Insert template |
 | `?` | Show shortcuts help |
 
 ## Screenshots

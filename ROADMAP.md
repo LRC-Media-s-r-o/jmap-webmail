@@ -17,6 +17,7 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Logout functionality
 - [x] Authentication error handling
 - [x] JMAP identities for sender address
+- [x] TOTP two-factor authentication (Stalwart-compatible)
 
 ### JMAP Server Connection
 - [x] Session establishment and keep-alive
@@ -35,6 +36,7 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Delete and archive
 - [x] Color tags/labels
 - [x] Full-text search
+- [x] Advanced search with JMAP filter panel, search chips, and cross-mailbox queries
 - [x] Attachment upload and download
 - [x] Batch operations (multi-select)
 - [x] Quick reply form
@@ -64,6 +66,7 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Loading states and skeletons
 - [x] Smooth transitions and animations
 - [x] Infinite scroll pagination
+- [x] Virtual scrolling for large email lists
 - [x] Error boundaries
 - [x] Settings page with preferences
 
@@ -88,6 +91,8 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] WCAG 2.0 Level AA color contrast compliance
 - [x] Newsletter unsubscribe support (RFC 2369)
 - [x] XSS attack prevention with comprehensive validation
+- [x] CSP Report-Only headers with per-request nonce
+- [x] Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy)
 
 ### Identity Management
 - [x] Multiple sender identities (name, email, signature)
@@ -96,56 +101,133 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Identity badges in email viewer and list
 - [x] Tag suggestions based on context
 
+### Address Book & Contacts
+- [x] Contact store with JMAP sync and local fallback
+- [x] Contact CRUD operations (create, read, update, delete)
+- [x] Contacts list view with search/filter
+- [x] Contact details view/edit form
+- [x] JMAP contacts sync (RFC 9553/9610 ContactCard/AddressBook)
+- [x] Email autocomplete from contacts
+- [x] Contacts integration in email composer (To/Cc/Bcc)
+- [x] Contact groups/lists management with JMAP members map
+- [x] vCard import/export (RFC 6350 parser/generator, duplicate detection)
+- [x] Bulk contact operations (multi-select, delete, group add, export)
+- [x] i18n support for contacts (all 8 languages)
+
+### Vacation Responder
+- [x] JMAP VacationResponse singleton management
+- [x] Settings tab with date range and message configuration
+- [x] Sidebar indicator when vacation auto-reply is active
+- [x] i18n support (all 8 languages)
+
+### Calendar Integration
+- [x] JMAP Calendar types (RFC 8984) and client methods
+- [x] Calendar capability detection (urn:ietf:params:jmap:calendars)
+- [x] Calendar store with Zustand (persist middleware)
+- [x] Month, week, day, and agenda views
+- [x] Event modal (create/edit/delete with recurrence, reminders)
+- [x] Mini-calendar sidebar with calendar visibility toggles
+- [x] Calendar settings (default view, week start, time format)
+- [x] Multi-day event spanning across all covered days
+- [x] Column-based overlap layout for concurrent events
+- [x] Locale-aware date formatting via next-intl
+- [x] First day of week and time format settings wired to views
+- [x] Push notification handling for calendar state changes
+- [x] Calendar page capability check (redirect if unsupported)
+- [x] Error handling with toast feedback on event CRUD
+- [x] Timezone auto-detection on event creation
+- [x] Input validation, color sanitization, focus trap
+- [x] ARIA grid roles and event card accessible labels
+- [x] Mobile touch targets (44px minimum)
+- [x] Calendar keyboard shortcuts (m/w/d/a views, t today, n new event)
+- [x] i18n support with ICU pluralization (all 8 languages)
+- [x] Drag-and-drop event rescheduling (week/day time snap, month date move)
+- [x] iCalendar (.ics) file import via CalendarEvent/parse with preview and bulk create
+- [x] Event notifications with client-side alert evaluation and toast display
+- [x] Notification sound, acknowledged alert persistence (localStorage), proactive 24h event fetch
+- [x] Configurable notification settings (enable/disable, sound toggle)
+- [x] Participant scheduling with iTIP invitations (organizer/attendee UI, RSVP buttons, contact autocomplete)
+- [x] Inline calendar invitation banner in email viewer (auto-detect .ics attachments, RSVP, import to calendar, cancellation display)
+- [x] Scheduling message support (sendSchedulingMessages flag for create/update/delete)
+
+### Email Filters
+- [x] JMAP Sieve Scripts (RFC 9661) with capability detection
+- [x] Visual rule builder (conditions: From/To/Cc/Subject/Header/Size/Body, actions: Move/Copy/Forward/Mark read/Star/Label/Discard/Reject/Keep/Stop)
+- [x] Raw Sieve script editor with syntax validation
+- [x] Sieve generator and parser with JSON metadata round-trip
+- [x] Filter store with CRUD, reorder, toggle, auto-save with rollback
+- [x] Opaque script detection with reset to visual builder option
+- [x] Focus trap accessibility in modals
+- [x] Toast validation feedback for empty rules
+- [x] Push notification handling for SieveScript state changes
+- [x] i18n support (all 8 languages)
+
+### Email Templates
+- [x] Reusable email templates with local storage persistence
+- [x] Category organization (General, Business, Personal, Support, Follow-up, custom)
+- [x] Dynamic placeholder variables with auto-fill from composer context
+- [x] Template manager modal (create, edit, duplicate, delete)
+- [x] Template picker in composer toolbar with search and category filter
+- [x] Custom placeholder prompt on template insertion
+- [x] Settings tab for template management
+- [x] Keyboard shortcut (Ctrl+Shift+T to insert template)
+- [x] i18n support (all 8 languages)
+
+### Email Display
+- [x] Proper email layout without horizontal scroll or clipping
+- [x] Blocked image container collapsing (no empty spaces in newsletters)
+
 ### Testing
 - [x] Unit tests for validation utilities (57 tests)
-- [x] Unit tests for email sanitization
-- [x] Unit tests for color transformation
+- [x] Unit tests for email sanitization (27 tests)
+- [x] Unit tests for color transformation (40 tests)
+- [x] Unit tests for contact store (56 tests)
+- [x] Unit tests for JMAP contact client (41 tests)
+- [x] Unit tests for vCard parser (18 tests)
+- [x] Unit tests for thread utilities (20 tests)
+- [x] Unit tests for email headers (39 tests)
+- [x] Component tests (contacts, UI components — 41 tests)
+- [x] JMAP client method tests (identity: 20, contacts: 41)
+- [x] Unit tests for Sieve generator (50 tests)
+- [x] Unit tests for Sieve parser (14 tests)
+- [x] Unit tests for calendar alerts (36 tests)
+- [x] Unit tests for calendar notification store (8 tests)
+- [x] Unit tests for calendar invitation parsing (25 tests)
+- [x] Unit tests for calendar participants (26 tests)
+- [x] Unit tests for template utilities (48 tests)
 - [x] XSS attack vector testing
+- [x] Playwright E2E framework setup
 
 ### Deployment
 - [x] Runtime environment variables (Docker-friendly configuration)
+- [x] Health check endpoint
+- [x] Docker support (multi-stage build, docker-compose, standalone output)
+- [x] Structured server-side logger (text/JSON format, configurable level)
 
 ## Planned Features
 
-### Address Book & Contacts
-- [ ] Contact store with CRUD operations
-- [ ] Contacts list view with search/filter
-- [ ] Contact details view/edit form
-- [ ] Contact groups management
-- [ ] vCard import/export
-- [ ] JMAP contacts sync (if server supports)
-- [ ] Email autocomplete from contacts
-- [ ] Contacts integration in composer
-
 ### Advanced Features
-- [ ] Email filters and rules
-- [ ] Calendar integration (JMAP Calendars)
-- [ ] Email templates
-- [ ] Vacation responder settings
-- [ ] Advanced search with filters
+- [ ] Free/busy queries (Principal/getAvailability)
+- [ ] Calendar sharing UI (JMAP Sharing RFC 9670)
 - [ ] Email encryption (PGP/GPG)
+- [ ] OAuth2/OIDC authentication (opt-in, Basic Auth remains default)
 
 ### Performance Optimizations
-- [ ] Virtual scrolling for large lists
 - [ ] Email content caching
 - [ ] Bundle size optimization
 - [ ] Service worker for offline support
 - [ ] Lazy loading for attachments
 
 ### Testing (Remaining)
-- [ ] Component tests
-- [ ] E2E tests with Playwright
+- [ ] E2E tests with real JMAP server
 - [ ] Accessibility testing
 - [ ] Performance testing
 
 ### Deployment
-- [ ] Health check endpoint
 - [ ] Production build optimizations
 - [ ] Monitoring and logging
 
 ### Security Enhancements
-- [ ] CSP headers configuration
-- [ ] Additional XSS protection layers
 - [ ] Rate limiting
 - [ ] CORS configuration
 

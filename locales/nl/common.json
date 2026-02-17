@@ -11,14 +11,19 @@
     "error": {
       "invalid_credentials": "Ongeldig e-mailadres of wachtwoord",
       "connection_failed": "Kan geen verbinding maken met de server",
-      "generic": "Er is een fout opgetreden. Probeer het opnieuw."
+      "generic": "Er is een fout opgetreden. Probeer het opnieuw.",
+      "totp_invalid": "Ongeldige authenticatiecode. Controleer uw authenticator-app."
     },
     "config_error": {
       "title": "Configuratiefout",
       "fetch_failed": "Kan de applicatieconfiguratie niet laden. Probeer het later opnieuw.",
       "server_not_configured": "De mailserver is niet geconfigureerd. Neem contact op met je beheerder."
     },
-    "remove_from_history": "Verwijder uit geschiedenis"
+    "remove_from_history": "Verwijder uit geschiedenis",
+    "totp_toggle": "Ik heb tweefactorauthenticatie",
+    "totp_label": "Authenticatiecode",
+    "totp_placeholder": "000000",
+    "totp_hide": "Tweefactorauthenticatie verbergen"
   },
   "sidebar": {
     "close": "Sluiten",
@@ -26,6 +31,8 @@
     "search_placeholder": "Zoeken in e-mail...",
     "storage": "Opslag",
     "sign_out": "Afmelden",
+    "contacts": "Contacten",
+    "calendar": "Agenda",
     "settings": "Instellingen",
     "loading_mailboxes": "Mappen laden...",
     "push_connected": "Real-time updates actief",
@@ -58,7 +65,8 @@
       "compose": "Opstellen",
       "go_back": "Terug"
     },
-    "clear_search": "Zoekopdracht wissen"
+    "clear_search": "Zoekopdracht wissen",
+    "vacation_active": "Afwezigheidsmelder is actief"
   },
   "email_list": {
     "no_emails": "Geen e-mails",
@@ -66,8 +74,8 @@
     "loading": "E-mails laden...",
     "unread": "ongelezen",
     "to_me": "Aan mij",
-    "to_recipients": "Aan {{count}} ontvangers",
-    "and_others": "en {{count}} anderen",
+    "to_recipients": "Aan {count} ontvangers",
+    "and_others": "en {count} anderen",
     "draft": "Concept",
     "starred": "Met ster",
     "conversations_count": "{count} van {total} gesprekken",
@@ -217,6 +225,23 @@
       "success_mailto": "Uitschrijfverzoek verzonden naar je e-mailclient",
       "error": "Kan niet uitschrijven",
       "dismiss": "Sluiten"
+    },
+    "calendar_invitation": {
+      "loading": "Evenementdetails laden…",
+      "title": "Agenda-uitnodiging",
+      "cancelled_title": "Evenement geannuleerd",
+      "organizer": "Georganiseerd door {name}",
+      "attendees": "{count, plural, one {# deelnemer} other {# deelnemers}}",
+      "accept": "Accepteren",
+      "maybe": "Misschien",
+      "decline": "Weigeren",
+      "add_to_calendar": "Toevoegen aan agenda",
+      "added": "Toegevoegd aan agenda",
+      "rsvp_sent": "Reactie verzonden",
+      "parse_error": "Kan uitnodiging niet lezen",
+      "no_calendar": "Agenda niet beschikbaar",
+      "select_calendar": "Agenda selecteren",
+      "already_in_calendar": "Staat al in je agenda"
     }
   },
   "email_composer": {
@@ -256,14 +281,16 @@
     "no_subject": "(Geen onderwerp)",
     "unknown_sender": "Onbekend",
     "quote": {
-      "reply_header": "Op {{date}} schreef {{sender}}:",
+      "reply_header": "Op {date} schreef {sender}:",
       "forward_header": "---------- Doorgestuurd bericht ----------",
-      "from": "Van: {{sender}}",
-      "date": "Datum: {{date}}",
-      "subject": "Onderwerp: {{subject}}",
-      "to": "Aan: {{recipients}}"
+      "from": "Van: {sender}",
+      "date": "Datum: {date}",
+      "subject": "Onderwerp: {subject}",
+      "to": "Aan: {recipients}"
     },
-    "remove_sub_address": "Sub-adres verwijderen"
+    "remove_sub_address": "Sub-adres verwijderen",
+    "use_template": "Sjabloon",
+    "save_as_template": "Opslaan als sjabloon"
   },
   "common": {
     "loading": "Laden...",
@@ -308,11 +335,20 @@
     "identity_created": "Identiteit succesvol aangemaakt",
     "identity_updated": "Identiteit succesvol bijgewerkt",
     "identity_deleted": "Identiteit verwijderd",
-    "identity_create_failed": "Kan identiteit niet aanmaken: {{error}}",
-    "identity_update_failed": "Kan identiteit niet bijwerken: {{error}}",
-    "identity_delete_failed": "Kan identiteit niet verwijderen: {{error}}",
+    "identity_create_failed": "Kan identiteit niet aanmaken: {error}",
+    "identity_update_failed": "Kan identiteit niet bijwerken: {error}",
+    "identity_delete_failed": "Kan identiteit niet verwijderen: {error}",
     "identity_unauthorized": "Je bent niet geautoriseerd om vanaf dit e-mailadres te verzenden",
-    "identity_not_found": "Identiteit niet gevonden"
+    "identity_not_found": "Identiteit niet gevonden",
+    "vacation_saved": "Afwezigheidsinstellingen opgeslagen",
+    "vacation_save_failed": "Kan afwezigheidsinstellingen niet opslaan",
+    "filters_saved": "Filters succesvol opgeslagen",
+    "filters_save_failed": "Filters opslaan mislukt",
+    "filters_deleted": "Filterregel verwijderd",
+    "templates_exported": "Sjablonen succesvol geëxporteerd",
+    "templates_imported": "{count, plural, one {# sjabloon geïmporteerd} other {# sjablonen geïmporteerd}}",
+    "templates_import_errors": "Sommige sjablonen konden niet worden geïmporteerd",
+    "templates_import_empty": "Geen sjablonen gevonden in het bestand"
   },
   "date": {
     "today": "Vandaag",
@@ -322,12 +358,12 @@
     "this_month": "Deze maand",
     "older": "Ouder",
     "just_now": "Zojuist",
-    "minutes_ago": "{{count}} minuut geleden",
-    "minutes_ago_plural": "{{count}} minuten geleden",
-    "hours_ago": "{{count}} uur geleden",
-    "hours_ago_plural": "{{count}} uur geleden",
-    "days_ago": "{{count}} dag geleden",
-    "days_ago_plural": "{{count}} dagen geleden"
+    "minutes_ago": "{count} minuut geleden",
+    "minutes_ago_plural": "{count} minuten geleden",
+    "hours_ago": "{count} uur geleden",
+    "hours_ago_plural": "{count} uur geleden",
+    "days_ago": "{count} dag geleden",
+    "days_ago_plural": "{count} dagen geleden"
   },
   "language": {
     "title": "Taal",
@@ -365,7 +401,11 @@
       "privacy": "Privacy & Beveiliging",
       "account": "Account",
       "identities": "Identiteiten",
-      "advanced": "Geavanceerd"
+      "vacation": "Afwezigheidsmelder",
+      "advanced": "Geavanceerd",
+      "calendar": "Agenda",
+      "filters": "Filters",
+      "templates": "Sjablonen"
     },
     "appearance": {
       "title": "Uiterlijk",
@@ -534,20 +574,20 @@
       "description": "Bekijk je accountinformatie",
       "email": {
         "label": "E-mailadres",
-        "value": "{{email}}"
+        "value": "{email}"
       },
       "server": {
         "label": "JMAP-server",
-        "value": "{{server}}"
+        "value": "{server}"
       },
       "storage": {
         "label": "Opslaggebruik",
-        "used": "{{used}} van {{total}} gebruikt",
-        "percentage": "{{percent}}% gebruikt"
+        "used": "{used} van {total} gebruikt",
+        "percentage": "{percent}% gebruikt"
       },
       "last_sync": {
         "label": "Laatste synchronisatie",
-        "value": "{{time}}"
+        "value": "{time}"
       }
     },
     "identities": {
@@ -558,13 +598,56 @@
         "description": "E-mailadressen geconfigureerd voor verzenden",
         "count_zero": "Geen identiteiten",
         "count_one": "1 identiteit",
-        "count_other": "{{count}} identiteiten"
+        "count_other": "{count} identiteiten"
       },
       "manage": "Identiteiten beheren",
       "sub_addressing": {
         "label": "Sub-adressering",
         "description": "Gebruik tags zoals gebruiker+tag@domein.nl om inkomende mail te organiseren",
         "learn_more": "Meer informatie"
+      }
+    },
+    "vacation": {
+      "title": "Afwezigheidsmelder",
+      "description": "Automatisch antwoorden op inkomende e-mails terwijl je afwezig bent",
+      "loading": "Afwezigheidsinstellingen laden...",
+      "not_supported": "Je mailserver ondersteunt geen afwezigheidsantwoorden.",
+      "fetch_error": "Kan afwezigheidsinstellingen niet laden. Probeer het opnieuw.",
+      "status": {
+        "label": "Afwezigheidsmelder",
+        "description": "Stuur een automatisch antwoord naar mensen die je mailen",
+        "active": "Actief",
+        "inactive": "Inactief"
+      },
+      "date_range": {
+        "title": "Periode",
+        "description": "Beperk optioneel het automatische antwoord tot een specifieke periode",
+        "start": "Startdatum",
+        "start_description": "Leeg laten voor geen startlimiet",
+        "end": "Einddatum",
+        "end_description": "Leeg laten voor geen eindlimiet"
+      },
+      "message": {
+        "title": "Automatisch antwoordbericht",
+        "description": "Het bericht dat als antwoord wordt verzonden",
+        "subject_label": "Onderwerp",
+        "subject_description": "Onderwerpregel van het automatische antwoord",
+        "subject_placeholder": "Afwezigheidsbericht",
+        "body_label": "Berichttekst",
+        "body_description": "Inhoud van het bericht in platte tekst",
+        "body_placeholder": "Bedankt voor je e-mail. Ik ben momenteel niet aanwezig en zal reageren bij terugkomst."
+      },
+      "preview": {
+        "title": "Voorbeeld",
+        "show": "Voorbeeld tonen",
+        "hide": "Voorbeeld verbergen"
+      },
+      "save": "Wijzigingen opslaan",
+      "saving": "Opslaan...",
+      "warnings": {
+        "end_before_start": "De einddatum moet na de startdatum liggen",
+        "start_in_past": "De startdatum ligt in het verleden",
+        "empty_body": "De berichttekst is leeg — ontvangers krijgen een leeg antwoord"
       }
     },
     "advanced": {
@@ -593,6 +676,151 @@
         "label": "Instellingen importeren",
         "description": "Upload instellingen vanuit JSON-bestand",
         "button": "Importeren"
+      }
+    },
+    "filters": {
+      "title": "E-mailfilters",
+      "description": "Maak regels om inkomende e-mails automatisch te sorteren, labelen en beheren",
+      "add_rule": "Regel toevoegen",
+      "no_rules": "Geen filterregels",
+      "no_rules_description": "Maak regels om uw inkomende e-mails automatisch te organiseren",
+      "edit_rule": "Regel bewerken",
+      "new_rule": "Nieuwe regel",
+      "delete_rule": "Regel verwijderen",
+      "delete_confirm": "Weet u zeker dat u deze regel wilt verwijderen?",
+      "enable": "Inschakelen",
+      "disable": "Uitschakelen",
+      "raw_editor": "Sieve-scripteditor",
+      "raw_editor_warning": "Het bewerken van het Sieve-script kan de visuele regelbewerking verstoren. Wijzigingen hier overschrijven de visuele builder.",
+      "validate": "Valideren",
+      "validation_success": "Het script is geldig",
+      "validation_error": "Het script bevat fouten",
+      "save": "Regels opslaan",
+      "saving": "Opslaan...",
+      "saved": "Filters succesvol opgeslagen",
+      "save_failed": "Filters opslaan mislukt",
+      "loading": "Filters laden...",
+      "not_supported": "Uw mailserver ondersteunt geen e-mailfilters.",
+      "rule_name": "Regelnaam",
+      "rule_name_placeholder": "bijv. Nieuwsbrieven sorteren",
+      "match_all": "Aan ALLE voorwaarden voldoen",
+      "match_any": "Aan EEN willekeurige voorwaarde voldoen",
+      "conditions": "Voorwaarden",
+      "add_condition": "Voorwaarde toevoegen",
+      "actions": "Acties",
+      "add_action": "Actie toevoegen",
+      "stop_processing": "Verwerking van volgende regels stoppen",
+      "condition_fields": {
+        "from": "Van",
+        "to": "Aan",
+        "cc": "Cc",
+        "subject": "Onderwerp",
+        "header": "Aangepaste header",
+        "size": "Grootte",
+        "body": "Inhoud"
+      },
+      "comparators": {
+        "contains": "bevat",
+        "not_contains": "bevat niet",
+        "is": "is precies",
+        "not_is": "is niet",
+        "starts_with": "begint met",
+        "ends_with": "eindigt met",
+        "matches": "komt overeen met patroon",
+        "greater_than": "is groter dan",
+        "less_than": "is kleiner dan"
+      },
+      "action_types": {
+        "move": "Verplaatsen naar map",
+        "copy": "Kopiëren naar map",
+        "forward": "Doorsturen naar",
+        "mark_read": "Markeren als gelezen",
+        "star": "Ster toevoegen",
+        "add_label": "Label toevoegen",
+        "discard": "Stilletjes verwijderen",
+        "reject": "Afwijzen met bericht",
+        "keep": "In postvak IN houden",
+        "stop": "Verwerking stoppen"
+      },
+      "move_to_folder": "Map selecteren",
+      "copy_to_folder": "Map selecteren",
+      "forward_to": "Doorsturen naar e-mailadres",
+      "forward_placeholder": "email@voorbeeld.nl",
+      "reject_message": "Afwijzingsbericht",
+      "reject_placeholder": "Uw e-mail is afgewezen",
+      "label_name": "Labelnaam",
+      "label_placeholder": "bijv. belangrijk",
+      "header_name": "Headernaam",
+      "header_placeholder": "bijv. X-Mailing-List",
+      "size_bytes": "Grootte in bytes",
+      "size_placeholder": "bijv. 1000000",
+      "system_managed": "Systeembeheerde regel",
+      "opaque_warning": "Dit script is buiten de visuele builder bewerkt. Alleen Sieve-scriptbewerking is beschikbaar.",
+      "open_sieve_editor": "Sieve-scripteditor openen",
+      "fetch_error": "Filters konden niet worden geladen",
+      "and": "en",
+      "or": "of",
+      "cancel": "Annuleren",
+      "confirm_delete": "Verwijderen",
+      "rule_list": "Filterregels",
+      "drag_to_reorder": "Slepen om te herschikken",
+      "match_type": "Overeenkomsttype",
+      "reset_to_visual": "Terugzetten naar visuele builder",
+      "reset_warning": "Dit verwijdert het huidige script en begint opnieuw.",
+      "confirm_reset": "Terugzetten",
+      "validation_empty_name": "Regelnaam is verplicht",
+      "validation_empty_conditions": "Minstens één voorwaarde met een waarde is vereist",
+      "validation_empty_actions": "Minstens één actie is vereist",
+      "sieve_editor": {
+        "title": "Sieve-scripteditor",
+        "warning": "Het bewerken van het Sieve-script kan de visuele regelbewerking verbreken. Wijzigingen hier overschrijven de visuele builder.",
+        "script_content": "Sieve-script",
+        "valid": "Script is geldig",
+        "invalid": "Script bevat fouten",
+        "save_warning": "Opslaan overschrijft alle visuele regels. Dit kan niet ongedaan worden gemaakt. Klik nogmaals op Opslaan om te bevestigen.",
+        "validating": "Valideren...",
+        "validate": "Valideren",
+        "cancel": "Annuleren",
+        "save": "Opslaan",
+        "confirm_save": "Opslaan bevestigen",
+        "validation_failed": "Validatieverzoek mislukt"
+      },
+      "rule_summary": {
+        "conditions_count": "{count, plural, one {# voorwaarde} other {# voorwaarden}}",
+        "actions_count": "{count, plural, one {# actie} other {# acties}}"
+      }
+    },
+    "templates": {
+      "title": "E-mailsjablonen",
+      "description": "Maak herbruikbare e-mailsjablonen met plaatshoudervariabelen",
+      "add": "Nieuw sjabloon",
+      "edit": "Sjabloon bewerken",
+      "name": "Sjabloonnaam",
+      "name_placeholder": "bijv.: Opvolgmail",
+      "category": "Categorie",
+      "category_placeholder": "bijv.: Werk, Persoonlijk",
+      "subject": "Onderwerp",
+      "subject_placeholder": "E-mailonderwerp",
+      "body": "Inhoud",
+      "body_placeholder": "E-mailinhoud...",
+      "recipients_placeholder": "email@example.com",
+      "identity": "Verzenden als",
+      "default_identity": "Standaard identiteit",
+      "favorite": "Favoriet",
+      "cancel": "Annuleren",
+      "create": "Aanmaken",
+      "update": "Bijwerken",
+      "confirm_delete": "Verwijderen",
+      "no_templates": "Geen sjablonen",
+      "manage": "Sjablonen beheren",
+      "count": "{count, plural, one {# sjabloon} other {# sjablonen}}",
+      "export_import": "Exporteren en importeren",
+      "export_import_description": "Maak een back-up van uw sjablonen of breng ze over naar een ander apparaat",
+      "export": "Exporteren",
+      "import": "Importeren",
+      "validation": {
+        "empty": "Sjabloonnaam is verplicht",
+        "too_long": "Sjabloonnaam mag maximaal 200 tekens zijn"
       }
     }
   },
@@ -628,7 +856,7 @@
     "not_spam": "Geen spam",
     "color_tag": "Kleurtag",
     "remove_color": "Kleur verwijderen",
-    "items_selected": "{{count}} e-mails geselecteerd"
+    "items_selected": "{count} e-mails geselecteerd"
   },
   "shortcuts": {
     "title": "Sneltoetsen",
@@ -637,7 +865,8 @@
       "navigation": "Navigatie",
       "actions": "E-mailacties",
       "global": "Globaal",
-      "threads": "Gesprekken"
+      "threads": "Gesprekken",
+      "composer": "Opstellen"
     },
     "navigation": {
       "next_email": "Volgende e-mail",
@@ -665,6 +894,9 @@
     },
     "threads": {
       "expand_collapse": "Gesprek uitklappen/inklappen"
+    },
+    "composer": {
+      "template_picker": "Sjabloonkiezer openen"
     }
   },
   "threads": {
@@ -742,5 +974,304 @@
       "identity_short": "via {name}",
       "subaddress_tag": "+{tag}"
     }
+  },
+  "templates": {
+    "picker_title": "Kies een sjabloon",
+    "search_placeholder": "Sjablonen zoeken...",
+    "section_favorites": "Favorieten",
+    "section_recent": "Recent",
+    "section_uncategorized": "Overig",
+    "no_templates": "Geen sjablonen",
+    "no_results": "Geen sjablonen gevonden",
+    "fill_placeholders": "Plaatshouderwaarden invullen",
+    "enter_value": "Voer een waarde in...",
+    "preview": "Voorbeeld",
+    "insert_with_values": "Invoegen met waarden",
+    "insert_raw": "Onbewerkt invoegen",
+    "copy_suffix": "(kopie)",
+    "placeholder": "Variabele",
+    "placeholders": {
+      "recipient_name": "Naam ontvanger",
+      "company": "Bedrijfsnaam",
+      "date": "Huidige datum",
+      "day_of_week": "Dag van de week",
+      "sender_name": "Uw naam"
+    }
+  },
+  "contacts": {
+    "title": "Contacten",
+    "search_placeholder": "Contacten zoeken...",
+    "create_new": "Nieuw contact",
+    "empty_state": "Geen contacten",
+    "empty_search": "Geen contacten gevonden",
+    "delete_confirm": "Weet u zeker dat u dit contact wilt verwijderen?",
+    "local_mode": "Contacten worden lokaal opgeslagen (server ondersteunt geen JMAP Contacts)",
+    "back_to_mail": "Terug naar e-mail",
+    "tabs": {
+      "all": "Alle",
+      "groups": "Groepen"
+    },
+    "detail": {
+      "emails": "E-mailadressen",
+      "phones": "Telefoonnummers",
+      "organizations": "Organisaties",
+      "addresses": "Adressen",
+      "notes": "Notities",
+      "no_contact_selected": "Selecteer een contact om details te bekijken",
+      "created": "Aangemaakt",
+      "updated": "Laatst bijgewerkt"
+    },
+    "form": {
+      "create_title": "Nieuw contact",
+      "edit_title": "Contact bewerken",
+      "given_name": "Voornaam",
+      "surname": "Achternaam",
+      "email": "E-mail",
+      "email_placeholder": "email@example.com",
+      "phone": "Telefoon",
+      "phone_placeholder": "+31 20 123 4567",
+      "organization": "Organisatie",
+      "organization_placeholder": "Bedrijfsnaam",
+      "note": "Notities",
+      "note_placeholder": "Notitie toevoegen...",
+      "context_work": "Werk",
+      "context_private": "Privé",
+      "add_email": "E-mail toevoegen",
+      "add_phone": "Telefoon toevoegen",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "creating": "Aanmaken...",
+      "updating": "Bijwerken...",
+      "name_required": "Ten minste een voor- of achternaam is vereist",
+      "email_invalid": "Voer een geldig e-mailadres in",
+      "save_failed": "Kon contact niet opslaan"
+    },
+    "groups": {
+      "create": "Nieuwe groep",
+      "edit": "Groep bewerken",
+      "empty": "Geen groepen",
+      "delete_confirm": "Weet u zeker dat u deze groep wilt verwijderen?",
+      "name_label": "Groepsnaam",
+      "name_placeholder": "bijv. Team, Familie",
+      "name_required": "Groepsnaam is vereist",
+      "save_failed": "Kon groep niet opslaan",
+      "members_label": "Leden",
+      "search_members": "Contacten zoeken om toe te voegen...",
+      "no_members": "Geen leden in deze groep",
+      "member_count": "{count, plural, =0 {Geen leden} one {1 lid} other {# leden}}"
+    },
+    "import": {
+      "title": "Contacten importeren",
+      "drop_hint": "Klik om een vCard-bestand te selecteren",
+      "file_types": ".vcf- of .vcard-bestanden",
+      "no_contacts": "Geen contacten gevonden in bestand",
+      "parse_error": "Kon vCard-bestand niet lezen",
+      "found": "{count, plural, one {1 contact gevonden} other {# contacten gevonden}}",
+      "duplicate": "Duplicaat",
+      "select_all": "Alles selecteren",
+      "deselect_all": "Alles deselecteren",
+      "selected": "{count, plural, one {1 geselecteerd} other {# geselecteerd}}",
+      "import_button": "Importeren",
+      "importing": "Importeren...",
+      "success": "{count, plural, one {1 contact geïmporteerd} other {# contacten geïmporteerd}}",
+      "failed": "Import mislukt",
+      "close": "Sluiten",
+      "file_too_large": "Bestand is te groot (max 5 MB)"
+    },
+    "export": {
+      "title": "Contacten exporteren",
+      "success": "{count, plural, one {1 contact geëxporteerd} other {# contacten geëxporteerd}}"
+    },
+    "bulk": {
+      "selected": "{count, plural, one {1 geselecteerd} other {# geselecteerd}}",
+      "select_all": "Alles selecteren",
+      "delete": "Verwijderen",
+      "delete_confirm": "{count, plural, one {1 contact} other {# contacten}} verwijderen?",
+      "deleted": "{count, plural, one {1 contact verwijderd} other {# contacten verwijderd}}",
+      "add_to_group": "Aan groep toevoegen",
+      "choose_group": "Kies een groep",
+      "adding_contacts": "{count, plural, one {1 contact} other {# contacten}} toevoegen",
+      "added_to_group": "Contacten aan groep toegevoegd",
+      "export": "Exporteren",
+      "clear": "Selectie wissen"
+    },
+    "toast": {
+      "created": "Contact aangemaakt",
+      "updated": "Contact bijgewerkt",
+      "deleted": "Contact verwijderd",
+      "error_create": "Kon contact niet aanmaken",
+      "error_update": "Kon contact niet bijwerken",
+      "error_delete": "Kon contact niet verwijderen"
+    }
+  },
+  "calendar": {
+    "title": "Agenda",
+    "back_to_email": "Terug naar e-mail",
+    "my_calendars": "Mijn agenda's",
+    "views": {
+      "month": "Maand",
+      "week": "Week",
+      "day": "Dag",
+      "agenda": "Agenda",
+      "today": "Vandaag"
+    },
+    "events": {
+      "create": "Evenement aanmaken",
+      "edit": "Evenement bewerken",
+      "delete": "Evenement verwijderen",
+      "details": "Evenementdetails",
+      "no_events": "Geen evenementen",
+      "all_day": "Hele dag",
+      "more": "+{count} meer",
+      "no_title": "(Geen titel)",
+      "today_header": "Vandaag",
+      "tomorrow_header": "Morgen"
+    },
+    "form": {
+      "title": "Titel",
+      "description": "Beschrijving",
+      "location": "Locatie",
+      "start_date": "Startdatum",
+      "end_date": "Einddatum",
+      "start_time": "Starttijd",
+      "end_time": "Eindtijd",
+      "all_day_event": "Hele dag evenement",
+      "calendar_select": "Agenda",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "delete_confirm": "Weet je zeker dat je dit evenement wilt verwijderen?",
+      "color": "Kleur"
+    },
+    "participants": {
+      "title": "Deelnemers",
+      "add": "Deelnemer toevoegen",
+      "organizer": "Organisator",
+      "attendee": "Deelnemer",
+      "accepted": "Geaccepteerd",
+      "declined": "Geweigerd",
+      "tentative": "Voorlopig",
+      "needs_action": "Reactie vereist",
+      "remove": "Verwijderen",
+      "email_placeholder": "E-mailadres toevoegen of contacten zoeken",
+      "send_invitations": "Uitnodigingen sturen naar deelnemers",
+      "status_summary": "{accepted} geaccepteerd, {pending} in afwachting",
+      "cancel_notification": "Deelnemers worden op de hoogte gebracht van de annulering",
+      "you_organizer": "Je bent de organisator",
+      "you_attendee": "Je bent een deelnemer",
+      "no_participants": "Geen deelnemers",
+      "count": "{count, plural, one {# deelnemer} other {# deelnemers}}"
+    },
+    "recurrence": {
+      "title": "Herhaling",
+      "none": "Wordt niet herhaald",
+      "daily": "Dagelijks",
+      "weekly": "Wekelijks",
+      "monthly": "Maandelijks",
+      "yearly": "Jaarlijks",
+      "every_n_days": "Elke {count} dagen",
+      "every_n_weeks": "Elke {count} weken",
+      "every_n_months": "Elke {count} maanden",
+      "until": "Tot",
+      "occurrences": "{count} herhalingen"
+    },
+    "alerts": {
+      "title": "Herinnering",
+      "none": "Geen herinnering",
+      "at_time": "Op het tijdstip van het evenement",
+      "minutes_before": "{count, plural, one {# minuut van tevoren} other {# minuten van tevoren}}",
+      "hours_before": "{count, plural, one {# uur van tevoren} other {# uur van tevoren}}",
+      "days_before": "{count, plural, one {# dag van tevoren} other {# dagen van tevoren}}"
+    },
+    "settings": {
+      "title": "Agenda-instellingen",
+      "default_view": "Standaardweergave",
+      "week_starts_on": "Week begint op",
+      "time_format": "Tijdnotatie",
+      "default_calendar": "Standaardagenda",
+      "default_reminder": "Standaardherinnering",
+      "time_format_12h": "12-uurs",
+      "time_format_24h": "24-uurs",
+      "notifications_enabled": "Evenementmeldingen",
+      "notifications_enabled_desc": "Meldingen weergeven voor aankomende evenementen",
+      "notification_sound": "Meldingsgeluid",
+      "notification_sound_desc": "Geluid afspelen voor agendameldingen"
+    },
+    "days": {
+      "monday": "Maandag",
+      "tuesday": "Dinsdag",
+      "wednesday": "Woensdag",
+      "thursday": "Donderdag",
+      "friday": "Vrijdag",
+      "saturday": "Zaterdag",
+      "sunday": "Zondag",
+      "mon": "Ma",
+      "tue": "Di",
+      "wed": "Wo",
+      "thu": "Do",
+      "fri": "Vr",
+      "sat": "Za",
+      "sun": "Zo"
+    },
+    "notifications": {
+      "event_created": "Evenement aangemaakt",
+      "event_updated": "Evenement bijgewerkt",
+      "event_deleted": "Evenement verwijderd",
+      "calendar_created": "Agenda aangemaakt",
+      "calendar_deleted": "Agenda verwijderd",
+      "event_move_error": "Evenement verplaatsen mislukt",
+      "alert_title": "Aankomend evenement",
+      "alert_now": "Begint nu",
+      "alert_in_minutes": "Over {count} min",
+      "invitation_sent": "Uitnodigingen verzonden",
+      "rsvp_updated": "Reactie bijgewerkt",
+      "rsvp_error": "Reactie kon niet worden bijgewerkt"
+    },
+    "status": {
+      "loading_calendars": "Agenda's laden...",
+      "loading_events": "Evenementen laden..."
+    },
+    "nav_prev": "Vorige",
+    "nav_next": "Volgende",
+    "import": {
+      "title": "Agenda importeren",
+      "select_file": "Selecteer .ics-bestand",
+      "drop_file": "of sleep het bestand hierheen",
+      "supported_formats": "iCalendar (.ics) bestanden worden ondersteund",
+      "parsing": "Agendabestand wordt verwerkt...",
+      "parsed_events": "{count} evenementen gevonden",
+      "no_events": "Geen evenementen gevonden in bestand",
+      "select_all": "Alles selecteren",
+      "deselect_all": "Alles deselecteren",
+      "target_calendar": "Importeren in agenda",
+      "import_button": "Selectie importeren",
+      "importing": "Evenementen importeren...",
+      "success": "{count} evenementen succesvol geïmporteerd",
+      "error": "Agenda importeren mislukt",
+      "file_too_large": "Bestand overschrijdt de limiet van 5 MB",
+      "invalid_format": "Ongeldig agendabestandsformaat"
+    }
+  },
+  "advanced_search": {
+    "title": "Geavanceerd zoeken",
+    "from": "Van",
+    "from_placeholder": "E-mail of naam afzender",
+    "to": "Aan",
+    "to_placeholder": "E-mail of naam ontvanger",
+    "subject": "Onderwerp",
+    "subject_placeholder": "Onderwerp bevat...",
+    "body": "Inhoud",
+    "has_attachment": "Bijlagen",
+    "date_after": "Na",
+    "date_before": "Voor",
+    "starred": "Met ster",
+    "unread": "Ongelezen",
+    "read": "Gelezen",
+    "yes": "Ja",
+    "no": "Nee",
+    "clear": "Wissen",
+    "clear_all": "Alles wissen",
+    "filters_active": "{count} filter",
+    "filters_active_plural": "{count} filters",
+    "toggle_filters": "Filters"
   }
 }

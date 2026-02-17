@@ -11,14 +11,19 @@
     "error": {
       "invalid_credentials": "Email o password non valida",
       "connection_failed": "Impossibile connettersi al server",
-      "generic": "Si è verificato un errore. Riprova."
+      "generic": "Si è verificato un errore. Riprova.",
+      "totp_invalid": "Codice di autenticazione non valido. Controlla la tua app di autenticazione."
     },
     "config_error": {
       "title": "Errore di configurazione",
       "fetch_failed": "Impossibile caricare la configurazione dell'applicazione. Riprovare più tardi.",
       "server_not_configured": "Il server di posta non è stato configurato. Contattare l'amministratore."
     },
-    "remove_from_history": "Rimuovi dalla cronologia"
+    "remove_from_history": "Rimuovi dalla cronologia",
+    "totp_toggle": "Ho l'autenticazione a due fattori",
+    "totp_label": "Codice di autenticazione",
+    "totp_placeholder": "000000",
+    "totp_hide": "Nascondi autenticazione a due fattori"
   },
   "sidebar": {
     "close": "Chiudi",
@@ -26,6 +31,8 @@
     "search_placeholder": "Cerca nella posta...",
     "storage": "Spazio di archiviazione",
     "sign_out": "Esci",
+    "contacts": "Contatti",
+    "calendar": "Calendario",
     "settings": "Impostazioni",
     "loading_mailboxes": "Caricamento caselle di posta...",
     "push_connected": "Aggiornamenti in tempo reale attivi",
@@ -58,7 +65,8 @@
       "compose": "Scrivi",
       "go_back": "Indietro"
     },
-    "clear_search": "Cancella ricerca"
+    "clear_search": "Cancella ricerca",
+    "vacation_active": "Risponditore automatico attivo"
   },
   "email_list": {
     "no_emails": "Nessun messaggio",
@@ -66,8 +74,8 @@
     "loading": "Caricamento messaggi...",
     "unread": "non letto",
     "to_me": "A me",
-    "to_recipients": "A {{count}} destinatari",
-    "and_others": "e altri {{count}}",
+    "to_recipients": "A {count} destinatari",
+    "and_others": "e altri {count}",
     "draft": "Bozza",
     "starred": "Speciale",
     "conversations_count": "{count} di {total} conversazioni",
@@ -217,6 +225,23 @@
       "success_mailto": "Richiesta di annullamento iscrizione inviata al tuo client email",
       "error": "Impossibile annullare l'iscrizione",
       "dismiss": "Ignora"
+    },
+    "calendar_invitation": {
+      "loading": "Caricamento dettagli evento…",
+      "title": "Invito calendario",
+      "cancelled_title": "Evento annullato",
+      "organizer": "Organizzato da {name}",
+      "attendees": "{count, plural, one {# partecipante} other {# partecipanti}}",
+      "accept": "Accetta",
+      "maybe": "Forse",
+      "decline": "Rifiuta",
+      "add_to_calendar": "Aggiungi al calendario",
+      "added": "Aggiunto al calendario",
+      "rsvp_sent": "Risposta inviata",
+      "parse_error": "Impossibile leggere l'invito",
+      "no_calendar": "Calendario non disponibile",
+      "select_calendar": "Seleziona calendario",
+      "already_in_calendar": "Già nel tuo calendario"
     }
   },
   "email_composer": {
@@ -256,14 +281,16 @@
     "no_subject": "(Nessun oggetto)",
     "unknown_sender": "Sconosciuto",
     "quote": {
-      "reply_header": "Il {{date}}, {{sender}} ha scritto:",
+      "reply_header": "Il {date}, {sender} ha scritto:",
       "forward_header": "---------- Messaggio inoltrato ----------",
-      "from": "Da: {{sender}}",
-      "date": "Data: {{date}}",
-      "subject": "Oggetto: {{subject}}",
-      "to": "A: {{recipients}}"
+      "from": "Da: {sender}",
+      "date": "Data: {date}",
+      "subject": "Oggetto: {subject}",
+      "to": "A: {recipients}"
     },
-    "remove_sub_address": "Rimuovi sotto-indirizzo"
+    "remove_sub_address": "Rimuovi sotto-indirizzo",
+    "use_template": "Modello",
+    "save_as_template": "Salva come modello"
   },
   "common": {
     "loading": "Caricamento...",
@@ -308,11 +335,20 @@
     "identity_created": "Identità creata con successo",
     "identity_updated": "Identità aggiornata con successo",
     "identity_deleted": "Identità eliminata",
-    "identity_create_failed": "Impossibile creare l'identità: {{error}}",
-    "identity_update_failed": "Impossibile aggiornare l'identità: {{error}}",
-    "identity_delete_failed": "Impossibile eliminare l'identità: {{error}}",
+    "identity_create_failed": "Impossibile creare l'identità: {error}",
+    "identity_update_failed": "Impossibile aggiornare l'identità: {error}",
+    "identity_delete_failed": "Impossibile eliminare l'identità: {error}",
     "identity_unauthorized": "Non sei autorizzato a inviare da questo indirizzo email",
-    "identity_not_found": "Identità non trovata"
+    "identity_not_found": "Identità non trovata",
+    "vacation_saved": "Impostazioni del risponditore automatico salvate",
+    "vacation_save_failed": "Impossibile salvare le impostazioni del risponditore automatico",
+    "filters_saved": "Filtri salvati con successo",
+    "filters_save_failed": "Impossibile salvare i filtri",
+    "filters_deleted": "Regola di filtraggio eliminata",
+    "templates_exported": "Modelli esportati con successo",
+    "templates_imported": "{count, plural, one {# modello importato} other {# modelli importati}}",
+    "templates_import_errors": "Alcuni modelli non sono stati importati",
+    "templates_import_empty": "Nessun modello trovato nel file"
   },
   "date": {
     "today": "Oggi",
@@ -322,12 +358,12 @@
     "this_month": "Questo mese",
     "older": "Meno recenti",
     "just_now": "Proprio ora",
-    "minutes_ago": "{{count}} minuto fa",
-    "minutes_ago_plural": "{{count}} minuti fa",
-    "hours_ago": "{{count}} ora fa",
-    "hours_ago_plural": "{{count}} ore fa",
-    "days_ago": "{{count}} giorno fa",
-    "days_ago_plural": "{{count}} giorni fa"
+    "minutes_ago": "{count} minuto fa",
+    "minutes_ago_plural": "{count} minuti fa",
+    "hours_ago": "{count} ora fa",
+    "hours_ago_plural": "{count} ore fa",
+    "days_ago": "{count} giorno fa",
+    "days_ago_plural": "{count} giorni fa"
   },
   "language": {
     "title": "Lingua",
@@ -365,7 +401,11 @@
       "privacy": "Privacy e sicurezza",
       "account": "Account",
       "identities": "Identità",
-      "advanced": "Avanzate"
+      "vacation": "Risponditore automatico",
+      "advanced": "Avanzate",
+      "calendar": "Calendario",
+      "filters": "Filtri",
+      "templates": "Modelli"
     },
     "appearance": {
       "title": "Aspetto",
@@ -534,20 +574,20 @@
       "description": "Visualizza le informazioni del tuo account",
       "email": {
         "label": "Indirizzo email",
-        "value": "{{email}}"
+        "value": "{email}"
       },
       "server": {
         "label": "Server JMAP",
-        "value": "{{server}}"
+        "value": "{server}"
       },
       "storage": {
         "label": "Utilizzo spazio",
-        "used": "{{used}} di {{total}} utilizzati",
-        "percentage": "{{percent}}% utilizzato"
+        "used": "{used} di {total} utilizzati",
+        "percentage": "{percent}% utilizzato"
       },
       "last_sync": {
         "label": "Ultima sincronizzazione",
-        "value": "{{time}}"
+        "value": "{time}"
       }
     },
     "identities": {
@@ -558,13 +598,56 @@
         "description": "Indirizzi email configurati per l'invio",
         "count_zero": "Nessuna identità",
         "count_one": "1 identità",
-        "count_other": "{{count}} identità"
+        "count_other": "{count} identità"
       },
       "manage": "Gestisci identità",
       "sub_addressing": {
         "label": "Sotto-indirizzamento",
         "description": "Usa tag come utente+tag@dominio.com per organizzare la posta in arrivo",
         "learn_more": "Scopri di più"
+      }
+    },
+    "vacation": {
+      "title": "Risponditore automatico",
+      "description": "Rispondi automaticamente alle email in arrivo durante la tua assenza",
+      "loading": "Caricamento impostazioni di risposta automatica...",
+      "not_supported": "Il server di posta non supporta le risposte automatiche di assenza.",
+      "fetch_error": "Impossibile caricare le impostazioni di risposta automatica. Riprova.",
+      "status": {
+        "label": "Risponditore automatico",
+        "description": "Invia una risposta automatica a chi ti scrive",
+        "active": "Attivo",
+        "inactive": "Inattivo"
+      },
+      "date_range": {
+        "title": "Periodo",
+        "description": "Limita opzionalmente la risposta automatica a un periodo specifico",
+        "start": "Data di inizio",
+        "start_description": "Lascia vuoto per nessun limite di inizio",
+        "end": "Data di fine",
+        "end_description": "Lascia vuoto per nessun limite di fine"
+      },
+      "message": {
+        "title": "Messaggio di risposta automatica",
+        "description": "Il messaggio che verrà inviato come risposta",
+        "subject_label": "Oggetto",
+        "subject_description": "Oggetto della risposta automatica",
+        "subject_placeholder": "Fuori ufficio",
+        "body_label": "Corpo del messaggio",
+        "body_description": "Contenuto del messaggio in testo semplice",
+        "body_placeholder": "Grazie per la tua email. Sono attualmente fuori ufficio e risponderò al mio ritorno."
+      },
+      "preview": {
+        "title": "Anteprima",
+        "show": "Mostra anteprima",
+        "hide": "Nascondi anteprima"
+      },
+      "save": "Salva modifiche",
+      "saving": "Salvataggio...",
+      "warnings": {
+        "end_before_start": "La data di fine deve essere successiva alla data di inizio",
+        "start_in_past": "La data di inizio è nel passato",
+        "empty_body": "Il corpo del messaggio è vuoto — i destinatari riceveranno una risposta vuota"
       }
     },
     "advanced": {
@@ -593,6 +676,151 @@
         "label": "Importa impostazioni",
         "description": "Carica impostazioni da file JSON",
         "button": "Importa"
+      }
+    },
+    "filters": {
+      "title": "Filtri email",
+      "description": "Crea regole per ordinare, etichettare e gestire automaticamente le email in arrivo",
+      "add_rule": "Aggiungi regola",
+      "no_rules": "Nessuna regola di filtro",
+      "no_rules_description": "Crea regole per organizzare automaticamente le tue email in arrivo",
+      "edit_rule": "Modifica regola",
+      "new_rule": "Nuova regola",
+      "delete_rule": "Elimina regola",
+      "delete_confirm": "Sei sicuro di voler eliminare questa regola?",
+      "enable": "Attiva",
+      "disable": "Disattiva",
+      "raw_editor": "Editor Sieve grezzo",
+      "raw_editor_warning": "La modifica dello script Sieve grezzo potrebbe compromettere l'editor visuale delle regole. Le modifiche effettuate qui sovrascrivono il costruttore visuale.",
+      "validate": "Convalida",
+      "validation_success": "Lo script è valido",
+      "validation_error": "Lo script contiene errori",
+      "save": "Salva regole",
+      "saving": "Salvataggio...",
+      "saved": "Filtri salvati con successo",
+      "save_failed": "Impossibile salvare i filtri",
+      "loading": "Caricamento filtri...",
+      "not_supported": "Il tuo server di posta non supporta i filtri email.",
+      "rule_name": "Nome della regola",
+      "rule_name_placeholder": "es. Ordina newsletter",
+      "match_all": "Corrispondere a TUTTE le condizioni",
+      "match_any": "Corrispondere a QUALSIASI condizione",
+      "conditions": "Condizioni",
+      "add_condition": "Aggiungi condizione",
+      "actions": "Azioni",
+      "add_action": "Aggiungi azione",
+      "stop_processing": "Interrompere l'elaborazione delle regole successive",
+      "condition_fields": {
+        "from": "Da",
+        "to": "A",
+        "cc": "Cc",
+        "subject": "Oggetto",
+        "header": "Intestazione personalizzata",
+        "size": "Dimensione",
+        "body": "Corpo"
+      },
+      "comparators": {
+        "contains": "contiene",
+        "not_contains": "non contiene",
+        "is": "è esattamente",
+        "not_is": "non è",
+        "starts_with": "inizia con",
+        "ends_with": "termina con",
+        "matches": "corrisponde al modello",
+        "greater_than": "è maggiore di",
+        "less_than": "è minore di"
+      },
+      "action_types": {
+        "move": "Sposta nella cartella",
+        "copy": "Copia nella cartella",
+        "forward": "Inoltra a",
+        "mark_read": "Segna come letto",
+        "star": "Aggiungi stella",
+        "add_label": "Aggiungi etichetta",
+        "discard": "Elimina silenziosamente",
+        "reject": "Rifiuta con messaggio",
+        "keep": "Mantieni nella posta in arrivo",
+        "stop": "Interrompi elaborazione"
+      },
+      "move_to_folder": "Seleziona cartella",
+      "copy_to_folder": "Seleziona cartella",
+      "forward_to": "Inoltra a indirizzo email",
+      "forward_placeholder": "email@esempio.com",
+      "reject_message": "Messaggio di rifiuto",
+      "reject_placeholder": "La tua email è stata rifiutata",
+      "label_name": "Nome dell'etichetta",
+      "label_placeholder": "es. importante",
+      "header_name": "Nome dell'intestazione",
+      "header_placeholder": "es. X-Mailing-List",
+      "size_bytes": "Dimensione in byte",
+      "size_placeholder": "es. 1000000",
+      "system_managed": "Regola gestita dal sistema",
+      "opaque_warning": "Questo script è stato modificato al di fuori del costruttore visuale. È disponibile solo la modifica Sieve grezza.",
+      "open_sieve_editor": "Apri editor Sieve",
+      "fetch_error": "Impossibile caricare i filtri",
+      "and": "e",
+      "or": "o",
+      "cancel": "Annulla",
+      "confirm_delete": "Elimina",
+      "rule_list": "Regole di filtraggio",
+      "drag_to_reorder": "Trascina per riordinare",
+      "match_type": "Tipo di corrispondenza",
+      "reset_to_visual": "Ripristina il costruttore visuale",
+      "reset_warning": "Questo eliminerà lo script attuale e ricomincerà da zero.",
+      "confirm_reset": "Ripristina",
+      "validation_empty_name": "Il nome della regola è obbligatorio",
+      "validation_empty_conditions": "È necessaria almeno una condizione con un valore",
+      "validation_empty_actions": "È necessaria almeno un'azione",
+      "sieve_editor": {
+        "title": "Editor script Sieve",
+        "warning": "La modifica dello script Sieve può interrompere la modifica visuale delle regole. Le modifiche effettuate qui sovrascrivono il costruttore visuale.",
+        "script_content": "Script Sieve",
+        "valid": "Lo script è valido",
+        "invalid": "Lo script contiene errori",
+        "save_warning": "Il salvataggio sovrascriverà tutte le regole visuali. Questa azione non può essere annullata. Fai clic su Salva di nuovo per confermare.",
+        "validating": "Validazione...",
+        "validate": "Valida",
+        "cancel": "Annulla",
+        "save": "Salva",
+        "confirm_save": "Conferma salvataggio",
+        "validation_failed": "Richiesta di validazione non riuscita"
+      },
+      "rule_summary": {
+        "conditions_count": "{count, plural, one {# condizione} other {# condizioni}}",
+        "actions_count": "{count, plural, one {# azione} other {# azioni}}"
+      }
+    },
+    "templates": {
+      "title": "Modelli email",
+      "description": "Crea modelli email riutilizzabili con variabili segnaposto",
+      "add": "Nuovo modello",
+      "edit": "Modifica modello",
+      "name": "Nome del modello",
+      "name_placeholder": "es.: Email di follow-up",
+      "category": "Categoria",
+      "category_placeholder": "es.: Lavoro, Personale",
+      "subject": "Oggetto",
+      "subject_placeholder": "Oggetto dell'email",
+      "body": "Corpo",
+      "body_placeholder": "Contenuto dell'email...",
+      "recipients_placeholder": "email@example.com",
+      "identity": "Invia come",
+      "default_identity": "Identità predefinita",
+      "favorite": "Preferito",
+      "cancel": "Annulla",
+      "create": "Crea",
+      "update": "Aggiorna",
+      "confirm_delete": "Elimina",
+      "no_templates": "Nessun modello",
+      "manage": "Gestisci modelli",
+      "count": "{count, plural, one {# modello} other {# modelli}}",
+      "export_import": "Esporta e importa",
+      "export_import_description": "Esegui il backup dei modelli o trasferiscili su un altro dispositivo",
+      "export": "Esporta",
+      "import": "Importa",
+      "validation": {
+        "empty": "Il nome del modello è obbligatorio",
+        "too_long": "Il nome del modello non deve superare i 200 caratteri"
       }
     }
   },
@@ -628,7 +856,7 @@
     "not_spam": "Non spam",
     "color_tag": "Etichetta colore",
     "remove_color": "Rimuovi colore",
-    "items_selected": "{{count}} messaggi selezionati"
+    "items_selected": "{count} messaggi selezionati"
   },
   "shortcuts": {
     "title": "Scorciatoie da tastiera",
@@ -637,7 +865,8 @@
       "navigation": "Navigazione",
       "actions": "Azioni sui messaggi",
       "global": "Globali",
-      "threads": "Conversazioni"
+      "threads": "Conversazioni",
+      "composer": "Composizione"
     },
     "navigation": {
       "next_email": "Messaggio successivo",
@@ -665,6 +894,9 @@
     },
     "threads": {
       "expand_collapse": "Espandi/comprimi conversazione"
+    },
+    "composer": {
+      "template_picker": "Apri selettore modelli"
     }
   },
   "threads": {
@@ -742,5 +974,304 @@
       "identity_short": "tramite {name}",
       "subaddress_tag": "+{tag}"
     }
+  },
+  "templates": {
+    "picker_title": "Scegli un modello",
+    "search_placeholder": "Cerca modelli...",
+    "section_favorites": "Preferiti",
+    "section_recent": "Recenti",
+    "section_uncategorized": "Altri",
+    "no_templates": "Nessun modello",
+    "no_results": "Nessun modello trovato",
+    "fill_placeholders": "Compila i valori segnaposto",
+    "enter_value": "Inserisci un valore...",
+    "preview": "Anteprima",
+    "insert_with_values": "Inserisci con valori",
+    "insert_raw": "Inserisci grezzo",
+    "copy_suffix": "(copia)",
+    "placeholder": "Variabile",
+    "placeholders": {
+      "recipient_name": "Nome del destinatario",
+      "company": "Nome dell'azienda",
+      "date": "Data odierna",
+      "day_of_week": "Giorno della settimana",
+      "sender_name": "Il tuo nome"
+    }
+  },
+  "contacts": {
+    "title": "Contatti",
+    "search_placeholder": "Cerca contatti...",
+    "create_new": "Nuovo contatto",
+    "empty_state": "Nessun contatto",
+    "empty_search": "Nessun contatto corrisponde alla ricerca",
+    "delete_confirm": "Sei sicuro di voler eliminare questo contatto?",
+    "local_mode": "I contatti sono salvati localmente (il server non supporta JMAP Contacts)",
+    "back_to_mail": "Torna alla posta",
+    "tabs": {
+      "all": "Tutti",
+      "groups": "Gruppi"
+    },
+    "detail": {
+      "emails": "Indirizzi email",
+      "phones": "Numeri di telefono",
+      "organizations": "Organizzazioni",
+      "addresses": "Indirizzi",
+      "notes": "Note",
+      "no_contact_selected": "Seleziona un contatto per vedere i dettagli",
+      "created": "Creato",
+      "updated": "Ultimo aggiornamento"
+    },
+    "form": {
+      "create_title": "Nuovo contatto",
+      "edit_title": "Modifica contatto",
+      "given_name": "Nome",
+      "surname": "Cognome",
+      "email": "Email",
+      "email_placeholder": "email@example.com",
+      "phone": "Telefono",
+      "phone_placeholder": "+39 02 1234 5678",
+      "organization": "Organizzazione",
+      "organization_placeholder": "Nome azienda",
+      "note": "Note",
+      "note_placeholder": "Aggiungi una nota...",
+      "context_work": "Lavoro",
+      "context_private": "Personale",
+      "add_email": "Aggiungi email",
+      "add_phone": "Aggiungi telefono",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "creating": "Creazione...",
+      "updating": "Aggiornamento...",
+      "name_required": "È richiesto almeno un nome o cognome",
+      "email_invalid": "Inserisci un indirizzo email valido",
+      "save_failed": "Impossibile salvare il contatto"
+    },
+    "groups": {
+      "create": "Nuovo gruppo",
+      "edit": "Modifica gruppo",
+      "empty": "Nessun gruppo",
+      "delete_confirm": "Sei sicuro di voler eliminare questo gruppo?",
+      "name_label": "Nome del gruppo",
+      "name_placeholder": "es. Team, Famiglia",
+      "name_required": "Il nome del gruppo è obbligatorio",
+      "save_failed": "Impossibile salvare il gruppo",
+      "members_label": "Membri",
+      "search_members": "Cerca contatti da aggiungere...",
+      "no_members": "Nessun membro in questo gruppo",
+      "member_count": "{count, plural, =0 {Nessun membro} one {1 membro} other {# membri}}"
+    },
+    "import": {
+      "title": "Importa contatti",
+      "drop_hint": "Clicca per selezionare un file vCard",
+      "file_types": "File .vcf o .vcard",
+      "no_contacts": "Nessun contatto trovato nel file",
+      "parse_error": "Impossibile analizzare il file vCard",
+      "found": "{count, plural, one {1 contatto trovato} other {# contatti trovati}}",
+      "duplicate": "Duplicato",
+      "select_all": "Seleziona tutto",
+      "deselect_all": "Deseleziona tutto",
+      "selected": "{count, plural, one {1 selezionato} other {# selezionati}}",
+      "import_button": "Importa",
+      "importing": "Importazione...",
+      "success": "{count, plural, one {1 contatto importato} other {# contatti importati}}",
+      "failed": "Importazione fallita",
+      "close": "Chiudi",
+      "file_too_large": "Il file è troppo grande (max 5 MB)"
+    },
+    "export": {
+      "title": "Esporta contatti",
+      "success": "{count, plural, one {1 contatto esportato} other {# contatti esportati}}"
+    },
+    "bulk": {
+      "selected": "{count, plural, one {1 selezionato} other {# selezionati}}",
+      "select_all": "Seleziona tutto",
+      "delete": "Elimina",
+      "delete_confirm": "Eliminare {count, plural, one {1 contatto} other {# contatti}}?",
+      "deleted": "{count, plural, one {1 contatto eliminato} other {# contatti eliminati}}",
+      "add_to_group": "Aggiungi al gruppo",
+      "choose_group": "Scegli un gruppo",
+      "adding_contacts": "Aggiunta di {count, plural, one {1 contatto} other {# contatti}}",
+      "added_to_group": "Contatti aggiunti al gruppo",
+      "export": "Esporta",
+      "clear": "Cancella selezione"
+    },
+    "toast": {
+      "created": "Contatto creato",
+      "updated": "Contatto aggiornato",
+      "deleted": "Contatto eliminato",
+      "error_create": "Impossibile creare il contatto",
+      "error_update": "Impossibile aggiornare il contatto",
+      "error_delete": "Impossibile eliminare il contatto"
+    }
+  },
+  "calendar": {
+    "title": "Calendario",
+    "back_to_email": "Torna alla posta",
+    "my_calendars": "I miei calendari",
+    "views": {
+      "month": "Mese",
+      "week": "Settimana",
+      "day": "Giorno",
+      "agenda": "Agenda",
+      "today": "Oggi"
+    },
+    "events": {
+      "create": "Crea evento",
+      "edit": "Modifica evento",
+      "delete": "Elimina evento",
+      "details": "Dettagli evento",
+      "no_events": "Nessun evento",
+      "all_day": "Tutto il giorno",
+      "more": "+{count} altri",
+      "no_title": "(Senza titolo)",
+      "today_header": "Oggi",
+      "tomorrow_header": "Domani"
+    },
+    "form": {
+      "title": "Titolo",
+      "description": "Descrizione",
+      "location": "Luogo",
+      "start_date": "Data di inizio",
+      "end_date": "Data di fine",
+      "start_time": "Ora di inizio",
+      "end_time": "Ora di fine",
+      "all_day_event": "Evento giornata intera",
+      "calendar_select": "Calendario",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "delete_confirm": "Sei sicuro di voler eliminare questo evento?",
+      "color": "Colore"
+    },
+    "participants": {
+      "title": "Partecipanti",
+      "add": "Aggiungi partecipante",
+      "organizer": "Organizzatore",
+      "attendee": "Partecipante",
+      "accepted": "Accettato",
+      "declined": "Rifiutato",
+      "tentative": "Provvisorio",
+      "needs_action": "In attesa di risposta",
+      "remove": "Rimuovi",
+      "email_placeholder": "Aggiungi indirizzo email o cerca contatti",
+      "send_invitations": "Invia inviti ai partecipanti",
+      "status_summary": "{accepted} accettato/i, {pending} in attesa",
+      "cancel_notification": "I partecipanti saranno avvisati della cancellazione",
+      "you_organizer": "Sei l'organizzatore",
+      "you_attendee": "Sei un partecipante",
+      "no_participants": "Nessun partecipante",
+      "count": "{count, plural, one {# partecipante} other {# partecipanti}}"
+    },
+    "recurrence": {
+      "title": "Ricorrenza",
+      "none": "Non si ripete",
+      "daily": "Giornaliero",
+      "weekly": "Settimanale",
+      "monthly": "Mensile",
+      "yearly": "Annuale",
+      "every_n_days": "Ogni {count} giorni",
+      "every_n_weeks": "Ogni {count} settimane",
+      "every_n_months": "Ogni {count} mesi",
+      "until": "Fino al",
+      "occurrences": "{count} ripetizioni"
+    },
+    "alerts": {
+      "title": "Promemoria",
+      "none": "Nessun promemoria",
+      "at_time": "All'ora dell'evento",
+      "minutes_before": "{count, plural, one {# minuto prima} other {# minuti prima}}",
+      "hours_before": "{count, plural, one {# ora prima} other {# ore prima}}",
+      "days_before": "{count, plural, one {# giorno prima} other {# giorni prima}}"
+    },
+    "settings": {
+      "title": "Impostazioni calendario",
+      "default_view": "Vista predefinita",
+      "week_starts_on": "La settimana inizia il",
+      "time_format": "Formato ora",
+      "default_calendar": "Calendario predefinito",
+      "default_reminder": "Promemoria predefinito",
+      "time_format_12h": "12 ore",
+      "time_format_24h": "24 ore",
+      "notifications_enabled": "Notifiche eventi",
+      "notifications_enabled_desc": "Mostra avvisi per gli eventi in arrivo",
+      "notification_sound": "Suono di notifica",
+      "notification_sound_desc": "Riproduci un suono per gli avvisi del calendario"
+    },
+    "days": {
+      "monday": "Lunedì",
+      "tuesday": "Martedì",
+      "wednesday": "Mercoledì",
+      "thursday": "Giovedì",
+      "friday": "Venerdì",
+      "saturday": "Sabato",
+      "sunday": "Domenica",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Gio",
+      "fri": "Ven",
+      "sat": "Sab",
+      "sun": "Dom"
+    },
+    "notifications": {
+      "event_created": "Evento creato",
+      "event_updated": "Evento aggiornato",
+      "event_deleted": "Evento eliminato",
+      "calendar_created": "Calendario creato",
+      "calendar_deleted": "Calendario eliminato",
+      "event_move_error": "Spostamento dell'evento non riuscito",
+      "alert_title": "Evento in arrivo",
+      "alert_now": "Inizia ora",
+      "alert_in_minutes": "Tra {count} min",
+      "invitation_sent": "Inviti inviati",
+      "rsvp_updated": "Risposta aggiornata",
+      "rsvp_error": "Impossibile aggiornare la risposta"
+    },
+    "status": {
+      "loading_calendars": "Caricamento calendari...",
+      "loading_events": "Caricamento eventi..."
+    },
+    "nav_prev": "Precedente",
+    "nav_next": "Successivo",
+    "import": {
+      "title": "Importa calendario",
+      "select_file": "Seleziona file .ics",
+      "drop_file": "o trascina il file qui",
+      "supported_formats": "File iCalendar (.ics) supportati",
+      "parsing": "Analisi del file in corso...",
+      "parsed_events": "{count} eventi trovati",
+      "no_events": "Nessun evento trovato nel file",
+      "select_all": "Seleziona tutto",
+      "deselect_all": "Deseleziona tutto",
+      "target_calendar": "Importa nel calendario",
+      "import_button": "Importa selezionati",
+      "importing": "Importazione eventi...",
+      "success": "{count} eventi importati con successo",
+      "error": "Importazione del calendario fallita",
+      "file_too_large": "Il file supera il limite di 5 MB",
+      "invalid_format": "Formato del file calendario non valido"
+    }
+  },
+  "advanced_search": {
+    "title": "Ricerca avanzata",
+    "from": "Da",
+    "from_placeholder": "Email o nome del mittente",
+    "to": "A",
+    "to_placeholder": "Email o nome del destinatario",
+    "subject": "Oggetto",
+    "subject_placeholder": "L'oggetto contiene...",
+    "body": "Corpo",
+    "has_attachment": "Allegati",
+    "date_after": "Dopo il",
+    "date_before": "Prima del",
+    "starred": "Preferiti",
+    "unread": "Non letti",
+    "read": "Letti",
+    "yes": "Sì",
+    "no": "No",
+    "clear": "Cancella",
+    "clear_all": "Cancella tutto",
+    "filters_active": "{count} filtro",
+    "filters_active_plural": "{count} filtri",
+    "toggle_filters": "Filtri"
   }
 }
