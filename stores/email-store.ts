@@ -53,7 +53,7 @@ interface EmailStore {
   loadMoreEmails: (client: JMAPClient) => Promise<void>;
   fetchEmailContent: (client: JMAPClient, emailId: string) => Promise<Email | null>;
   fetchQuota: (client: JMAPClient) => Promise<void>;
-  sendEmail: (client: JMAPClient, to: string[], subject: string, body: string, cc?: string[], bcc?: string[], identityId?: string, fromEmail?: string, draftId?: string) => Promise<void>;
+  sendEmail: (client: JMAPClient, to: string[], subject: string, body: string, cc?: string[], bcc?: string[], identityId?: string, fromEmail?: string, draftId?: string, fromName?: string) => Promise<void>;
   deleteEmail: (client: JMAPClient, emailId: string) => Promise<void>;
   markAsRead: (client: JMAPClient, emailId: string, read: boolean) => Promise<void>;
   moveToMailbox: (client: JMAPClient, emailId: string, mailboxId: string) => Promise<void>;
@@ -314,10 +314,10 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
     }
   },
 
-  sendEmail: async (client, to, subject, body, cc, bcc, identityId, fromEmail, draftId) => {
+  sendEmail: async (client, to, subject, body, cc, bcc, identityId, fromEmail, draftId, fromName) => {
     set({ isLoading: true, error: null });
     try {
-      await client.sendEmail(to, subject, body, cc, bcc, identityId, fromEmail, draftId);
+      await client.sendEmail(to, subject, body, cc, bcc, identityId, fromEmail, draftId, fromName);
       // Refresh handled by UI layer for immediate feedback
       set({ isLoading: false });
     } catch (error) {
@@ -918,7 +918,7 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
         throw new Error('Inbox not found');
       }
 
-      targetMailboxId = inboxMailbox.id;
+      targetMailboxId = inboxMailbox.originalId || inboxMailbox.id;
     }
 
     try {
@@ -970,7 +970,7 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
 
     try {
       for (const emailId of emailIds) {
-        await client.undoSpam(emailId, inboxMailbox.id, accountId);
+        await client.undoSpam(emailId, inboxMailbox.originalId || inboxMailbox.id, accountId);
       }
 
       set(state => ({
@@ -1060,8 +1060,10 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
 
       const result = await client.getEmails(jmapMailboxId, accountId, emailsPerPage, 0);
 
+      const currentEmails = get().emails;
+
       // Check if there are new emails by comparing the first email ID
-      const currentFirstEmailId = get().emails[0]?.id;
+      const currentFirstEmailId = currentEmails[0]?.id;
       const newFirstEmailId = result.emails[0]?.id;
 
       // If the first email changed, we have a new email - trigger notification
@@ -1069,11 +1071,26 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
         get().handleNewEmailNotification(result.emails[0]);
       }
 
-      set({
-        emails: result.emails,
-        hasMoreEmails: result.hasMore,
-        totalEmails: result.total
-      });
+      // Skip state update if emails haven't actually changed to avoid
+      // unnecessary re-renders that cause a visible list flicker
+      const hasChanged =
+        currentEmails.length !== result.emails.length ||
+        result.emails.some((email, i) => {
+          const curr = currentEmails[i];
+          return (
+            curr.id !== email.id ||
+            curr.threadId !== email.threadId ||
+            JSON.stringify(curr.keywords) !== JSON.stringify(email.keywords)
+          );
+        });
+
+      if (hasChanged) {
+        set({
+          emails: result.emails,
+          hasMoreEmails: result.hasMore,
+          totalEmails: result.total,
+        });
+      }
     } catch (error) {
       console.error('Failed to refresh current mailbox:', error);
       // Don't set error state for background refreshes to avoid disrupting the UI

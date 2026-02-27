@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Trash2, Check, HelpCircle, XCircle, Users } from "lucide-react";
-import { format, parseISO, addHours } from "date-fns";
+import { X, Trash2, Check, Users, CalendarDays, Copy } from "lucide-react";
+import { format, parseISO, addHours, addDays } from "date-fns";
 import type { CalendarEvent, Calendar, CalendarParticipant } from "@/lib/jmap/types";
 import { parseDuration } from "./event-card";
 import { ParticipantInput } from "./participant-input";
@@ -22,8 +22,10 @@ interface EventModalProps {
   event?: CalendarEvent | null;
   calendars: Calendar[];
   defaultDate?: Date;
+  defaultEndDate?: Date;
   onSave: (data: Partial<CalendarEvent>, sendSchedulingMessages?: boolean) => void;
   onDelete?: (id: string, sendSchedulingMessages?: boolean) => void;
+  onDuplicate?: (data: Partial<CalendarEvent>) => void;
   onRsvp?: (eventId: string, participantId: string, status: CalendarParticipant['participationStatus']) => void;
   onClose: () => void;
   currentUserEmails?: string[];
@@ -59,8 +61,10 @@ export function EventModal({
   event,
   calendars,
   defaultDate,
+  defaultEndDate,
   onSave,
   onDelete,
+  onDuplicate,
   onRsvp,
   onClose,
   currentUserEmails = [],
@@ -94,10 +98,17 @@ export function EventModal({
     return getParticipantList(event);
   }, [event]);
 
+  const organizerInfo = useMemo(() => {
+    if (!event?.participants) return null;
+    const organizer = existingParticipants.find(p => p.isOrganizer);
+    return organizer ? { name: organizer.name, email: organizer.email } : null;
+  }, [event, existingParticipants]);
+
   const getInitialStart = (): Date => {
     if (event?.start) return parseISO(event.start);
     if (defaultDate) {
       const d = new Date(defaultDate);
+      if (defaultEndDate) return d;
       const now = new Date();
       d.setHours(now.getHours() + 1, 0, 0, 0);
       return d;
@@ -113,6 +124,7 @@ export function EventModal({
       const dur = parseDuration(event.duration);
       return new Date(s.getTime() + dur * 60000);
     }
+    if (defaultEndDate) return new Date(defaultEndDate);
     return addHours(getInitialStart(), 1);
   };
 
@@ -225,6 +237,8 @@ export function EventModal({
           relativeTo: null,
         },
       };
+    } else if (event && event.locations && Object.keys(event.locations).length > 0) {
+      data.locations = null;
     }
 
     if (recurrence !== "none") {
@@ -247,6 +261,10 @@ export function EventModal({
         count: null,
         until: null,
       }];
+    } else if (event && event.recurrenceRules?.length) {
+      data.recurrenceRules = null;
+      if (event.recurrenceOverrides) data.recurrenceOverrides = null;
+      if (event.excludedRecurrenceRules) data.excludedRecurrenceRules = null;
     }
 
     if (alert !== "none") {
@@ -260,6 +278,8 @@ export function EventModal({
           relatedTo: null,
         },
       };
+    } else if (event && event.alerts && Object.keys(event.alerts).length > 0) {
+      data.alerts = null;
     }
 
     if (attendees.length > 0 && currentUserEmails.length > 0) {
@@ -282,6 +302,29 @@ export function EventModal({
     onRsvp(event.id, userParticipantId, status);
     onClose();
   }, [event, userParticipantId, onRsvp, onClose]);
+
+  const handleDuplicate = useCallback(() => {
+    if (!event || !onDuplicate) return;
+    const start = parseISO(event.start);
+    const newStart = addDays(start, 1);
+    const data: Partial<CalendarEvent> = {
+      title: event.title,
+      description: event.description,
+      start: format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
+      duration: event.duration,
+      timeZone: event.timeZone,
+      showWithoutTime: event.showWithoutTime,
+      calendarIds: { ...event.calendarIds },
+      status: "confirmed",
+      freeBusyStatus: event.freeBusyStatus,
+      privacy: event.privacy,
+    };
+    if (event.locations) data.locations = structuredClone(event.locations);
+    if (event.recurrenceRules) data.recurrenceRules = structuredClone(event.recurrenceRules);
+    if (event.alerts) data.alerts = structuredClone(event.alerts);
+    if (event.participants) data.participants = structuredClone(event.participants);
+    onDuplicate(data);
+  }, [event, onDuplicate]);
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -342,6 +385,18 @@ export function EventModal({
           </div>
 
           <div className="px-5 py-4 space-y-3">
+            <div className="flex items-start gap-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-4 py-3">
+              <CalendarDays className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-blue-900 dark:text-blue-200">
+                  {t("participants.invited_by", { name: organizerInfo?.name || organizerInfo?.email || t("participants.organizer") })}
+                </p>
+                <p className="text-blue-700 dark:text-blue-400 mt-0.5">
+                  {t("participants.respond_below")}
+                </p>
+              </div>
+            </div>
+
             <div className="text-sm">
               <span className="font-medium">{format(startD, "EEE, MMM d, yyyy")}</span>
               {!event.showWithoutTime && (
@@ -358,10 +413,6 @@ export function EventModal({
             {locationName && (
               <p className="text-sm text-muted-foreground">{locationName}</p>
             )}
-
-            <div className="text-xs text-muted-foreground">
-              {t("participants.you_attendee")}
-            </div>
 
             {participants.length > 0 && (
               <div className="space-y-1">
@@ -383,33 +434,39 @@ export function EventModal({
 
           <div className="px-5 py-4 border-t border-border">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">RSVP</span>
+              <span className="text-sm font-medium">{t("participants.rsvp_label")}</span>
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   variant={userCurrentStatus === "accepted" ? "default" : "outline"}
                   onClick={() => handleRsvp("accepted")}
-                  className={userCurrentStatus === "accepted" ? "bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-300 dark:ring-green-700" : "text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-950"}
+                  className={userCurrentStatus === "accepted"
+                    ? "bg-green-600 hover:bg-green-700 text-white dark:bg-green-500 dark:hover:bg-green-600"
+                    : "text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-950"}
                 >
-                  <Check className="w-4 h-4 mr-1" />
+                  {userCurrentStatus === "accepted" && <Check className="w-4 h-4 mr-1" />}
                   {t("participants.accepted")}
                 </Button>
                 <Button
                   size="sm"
                   variant={userCurrentStatus === "tentative" ? "default" : "outline"}
                   onClick={() => handleRsvp("tentative")}
-                  className={userCurrentStatus === "tentative" ? "bg-amber-600 hover:bg-amber-700 text-white ring-2 ring-amber-300 dark:ring-amber-700" : "text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"}
+                  className={userCurrentStatus === "tentative"
+                    ? "bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
+                    : "border border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"}
                 >
-                  <HelpCircle className="w-4 h-4 mr-1" />
+                  {userCurrentStatus === "tentative" && <Check className="w-4 h-4 mr-1" />}
                   {t("participants.tentative")}
                 </Button>
                 <Button
                   size="sm"
-                  variant={userCurrentStatus === "declined" ? "default" : "outline"}
+                  variant={userCurrentStatus === "declined" ? "default" : "ghost"}
                   onClick={() => handleRsvp("declined")}
-                  className={userCurrentStatus === "declined" ? "bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-300 dark:ring-red-700" : "text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950"}
+                  className={userCurrentStatus === "declined"
+                    ? "bg-red-600 hover:bg-red-700 text-white dark:bg-red-500 dark:hover:bg-red-600"
+                    : "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"}
                 >
-                  <XCircle className="w-4 h-4 mr-1" />
+                  {userCurrentStatus === "declined" && <Check className="w-4 h-4 mr-1" />}
                   {t("participants.declined")}
                 </Button>
               </div>
@@ -500,7 +557,7 @@ export function EventModal({
             <label htmlFor="allDay" className="text-sm">{t("form.all_day_event")}</label>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-sm font-medium mb-1 block">{t("form.start_date")}</label>
               <input
@@ -560,7 +617,7 @@ export function EventModal({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-sm font-medium mb-1 block">{t("recurrence.title")}</label>
               <select
@@ -610,45 +667,56 @@ export function EventModal({
         </div>
 
         <div className="flex items-center justify-between px-5 py-4 border-t border-border">
-          {isEdit && onDelete ? (
-            showDeleteConfirm ? (
-              <div className="flex items-center gap-2">
-                <div>
-                  <span className="text-sm text-red-600 dark:text-red-400">
-                    {t("form.delete_confirm")}
-                  </span>
-                  {hasParticipants && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {t("participants.cancel_notification")}
-                    </p>
-                  )}
+          <div className="flex items-center gap-1">
+            {isEdit && onDelete && (
+              showDeleteConfirm ? (
+                <div className="flex items-center gap-2">
+                  <div>
+                    <span className="text-sm text-red-600 dark:text-red-400">
+                      {t("form.delete_confirm")}
+                    </span>
+                    {hasParticipants && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t("participants.cancel_notification")}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { onDelete(event!.id, hasParticipants || undefined); onClose(); }}
+                    className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700"
+                  >
+                    {t("events.delete")}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+                    {t("form.cancel")}
+                  </Button>
                 </div>
+              ) : (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => { onDelete(event!.id, hasParticipants || undefined); onClose(); }}
-                  className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-red-600 dark:text-red-400"
                 >
+                  <Trash2 className="w-4 h-4 mr-1" />
                   {t("events.delete")}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
-                  {t("form.cancel")}
-                </Button>
-              </div>
-            ) : (
+              )
+            )}
+            {isEdit && onDuplicate && !showDeleteConfirm && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="text-red-600 dark:text-red-400"
+                onClick={handleDuplicate}
+                aria-label={t("events.duplicate")}
               >
-                <Trash2 className="w-4 h-4 mr-1" />
-                {t("events.delete")}
+                <Copy className="w-4 h-4 mr-1" />
+                {t("events.duplicate")}
               </Button>
-            )
-          ) : (
-            <div />
-          )}
+            )}
+          </div>
 
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>

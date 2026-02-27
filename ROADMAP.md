@@ -8,7 +8,7 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Next.js 16 with TypeScript and App Router
 - [x] Tailwind CSS v4 with Oxide engine
 - [x] Zustand state management
-- [x] JMAP client implementation (jmap-jam)
+- [x] Custom JMAP client implementation (RFC 8620)
 
 ### Authentication
 - [x] Login with JMAP server authentication
@@ -18,10 +18,15 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Authentication error handling
 - [x] JMAP identities for sender address
 - [x] TOTP two-factor authentication (Stalwart-compatible)
+- [x] OAuth2/OIDC with PKCE (opt-in SSO, session persistence, RP-initiated logout)
+- [x] External IdP support via explicit issuer URL (Keycloak, Authentik, etc.)
+- [x] "Remember me" session persistence for Basic Auth (AES-256-GCM encrypted httpOnly cookie)
 
 ### JMAP Server Connection
 - [x] Session establishment and keep-alive
 - [x] Connection error handling and retries
+- [x] CORS error detection with actionable user guidance
+- [x] Session URL origin rewriting (fixes Docker/reverse proxy deployments where server returns internal hostname)
 - [x] Storage quota display
 - [x] Server capability detection
 - [x] Shared folders support (multi-account access)
@@ -69,6 +74,16 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Virtual scrolling for large email lists
 - [x] Error boundaries
 - [x] Settings page with preferences
+- [x] Navigation rail (desktop vertical icon sidebar + mobile bottom tab bar)
+- [x] Welcome banner for first-time users (one-time display, localStorage persistence)
+- [x] Confirmation dialog component with promise-based useConfirmDialog hook
+- [x] Toast notifications with undo action support and typed durations
+- [x] Inline form validation with shake animation (email composer, contact form)
+- [x] Login UX polish (error shake, discreet 2FA toggle, password visibility toggle, session expired banner)
+- [x] Empty state patterns for contacts (distinct "no data" vs "no search results" with contextual actions)
+- [x] WCAG AA reduced-motion media query (global animation/transition reset)
+- [x] Safe area inset utilities for notched devices
+- [x] Screen reader live region announcements (sr-only)
 
 ### Internationalization
 - [x] English language support
@@ -93,6 +108,10 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] XSS attack prevention with comprehensive validation
 - [x] CSP Report-Only headers with per-request nonce
 - [x] Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy)
+- [x] Reusable focus trap hook (Tab cycling, Escape handling, focus restore)
+- [x] WCAG AA prefers-reduced-motion support (global animation/transition reset)
+- [x] Safe area insets for notched mobile devices
+- [x] Screen reader sr-only live region for dynamic announcements
 
 ### Identity Management
 - [x] Multiple sender identities (name, email, signature)
@@ -100,6 +119,8 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Per-identity signatures
 - [x] Identity badges in email viewer and list
 - [x] Tag suggestions based on context
+- [x] Display name included in From header (recipients see name, not just email)
+- [x] Primary identity (matching login) selected by default in composer
 
 ### Address Book & Contacts
 - [x] Contact store with JMAP sync and local fallback
@@ -149,6 +170,11 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Participant scheduling with iTIP invitations (organizer/attendee UI, RSVP buttons, contact autocomplete)
 - [x] Inline calendar invitation banner in email viewer (auto-detect .ics attachments, RSVP, import to calendar, cancellation display)
 - [x] Scheduling message support (sendSchedulingMessages flag for create/update/delete)
+- [x] Click-drag to create events (pointer-based time range selection, 15-min snap, visual overlay)
+- [x] Event resize by dragging bottom edge handle (15-min snap, optimistic JMAP update)
+- [x] Recurring event edit/delete scope dialog (this event / this and following / all events)
+- [x] Double-click quick event creation (inline title input, PT1H default)
+- [x] Event duplication button in modal (clones event +1 day, opens for editing)
 
 ### Email Filters
 - [x] JMAP Sieve Scripts (RFC 9661) with capability detection
@@ -195,6 +221,7 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Unit tests for calendar invitation parsing (25 tests)
 - [x] Unit tests for calendar participants (26 tests)
 - [x] Unit tests for template utilities (48 tests)
+- [x] Unit tests for OAuth PKCE and discovery (14 tests)
 - [x] XSS attack vector testing
 - [x] Playwright E2E framework setup
 
@@ -203,6 +230,9 @@ This document tracks the development status and planned features for JMAP Webmai
 - [x] Health check endpoint
 - [x] Docker support (multi-stage build, docker-compose, standalone output)
 - [x] Structured server-side logger (text/JSON format, configurable level)
+- [x] Pre-built Docker image on [Docker Hub](https://hub.docker.com/r/rootfr/jmap-webmail) and [GHCR](https://ghcr.io/root-fr/jmap-webmail) with multi-arch support (amd64/arm64)
+- [x] GitHub Actions CI/CD for automated image publishing on releases
+- [x] CVE remediation: remove npm from production image, upgrade Alpine packages
 
 ## Planned Features
 
@@ -210,7 +240,6 @@ This document tracks the development status and planned features for JMAP Webmai
 - [ ] Free/busy queries (Principal/getAvailability)
 - [ ] Calendar sharing UI (JMAP Sharing RFC 9670)
 - [ ] Email encryption (PGP/GPG)
-- [ ] OAuth2/OIDC authentication (opt-in, Basic Auth remains default)
 
 ### Performance Optimizations
 - [ ] Email content caching
@@ -229,7 +258,6 @@ This document tracks the development status and planned features for JMAP Webmai
 
 ### Security Enhancements
 - [ ] Rate limiting
-- [ ] CORS configuration
 
 ## Known Issues
 

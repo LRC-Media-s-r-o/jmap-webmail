@@ -11,8 +11,11 @@
     "error": {
       "invalid_credentials": "Email o password non valida",
       "connection_failed": "Impossibile connettersi al server",
+      "cors_blocked": "Il server è raggiungibile ma sta bloccando le richieste cross-origin. Controlla le impostazioni CORS del tuo server JMAP e consenti questo dominio.",
       "generic": "Si è verificato un errore. Riprova.",
-      "totp_invalid": "Codice di autenticazione non valido. Controlla la tua app di autenticazione."
+      "totp_invalid": "Codice di autenticazione non valido. Controlla la tua app di autenticazione.",
+      "oauth_discovery_failed": "SSO è abilitato ma il provider di identità non è raggiungibile. Controlla la configurazione OAuth.",
+      "server_error": "Il server non è temporaneamente disponibile. Riprova più tardi."
     },
     "config_error": {
       "title": "Errore di configurazione",
@@ -20,10 +23,25 @@
       "server_not_configured": "Il server di posta non è stato configurato. Contattare l'amministratore."
     },
     "remove_from_history": "Rimuovi dalla cronologia",
-    "totp_toggle": "Ho l'autenticazione a due fattori",
     "totp_label": "Codice di autenticazione",
     "totp_placeholder": "000000",
-    "totp_hide": "Nascondi autenticazione a due fattori"
+    "totp_toggle": "Ho un codice 2FA",
+    "remember_me": "Ricordami",
+    "show_password": "Mostra password",
+    "hide_password": "Nascondi password",
+    "session_expired": "La sessione è scaduta. Accedi di nuovo.",
+    "dismiss": "Chiudi",
+    "or": "o",
+    "sign_in_sso": "Accedi con SSO",
+    "oauth_completing": "Completamento dell'accesso...",
+    "oauth_error": {
+      "title": "Autenticazione non riuscita",
+      "invalid_state": "La convalida di sicurezza è fallita. Prova ad accedere di nuovo.",
+      "missing_params": "Dati di autorizzazione mancanti. Prova ad accedere di nuovo.",
+      "token_exchange_failed": "Impossibile completare l'autenticazione. Riprova.",
+      "access_denied": "Accesso negato. Contatta il tuo amministratore.",
+      "back_to_login": "Torna al login"
+    }
   },
   "sidebar": {
     "close": "Chiudi",
@@ -66,7 +84,11 @@
       "go_back": "Indietro"
     },
     "clear_search": "Cancella ricerca",
-    "vacation_active": "Risponditore automatico attivo"
+    "vacation_active": "Risponditore automatico attivo",
+    "compose_hint": "Scrivi (c)",
+    "search_placeholder_hint": "Cerca posta... (premi /)",
+    "mail": "Posta",
+    "nav_label": "Navigazione"
   },
   "email_list": {
     "no_emails": "Nessun messaggio",
@@ -202,7 +224,12 @@
     "tooltips": {
       "reply": "Rispondi",
       "archive": "Archivia",
-      "delete": "Elimina"
+      "delete": "Elimina",
+      "reply_all": "Rispondi a tutti (a)",
+      "forward": "Inoltra (f)",
+      "star": "Aggiungi stella (s)",
+      "unstar": "Rimuovi stella (s)",
+      "compose": "Scrivi (c)"
     },
     "spam": {
       "button_title": "Segnala come spam",
@@ -242,7 +269,8 @@
       "no_calendar": "Calendario non disponibile",
       "select_calendar": "Seleziona calendario",
       "already_in_calendar": "Già nel tuo calendario"
-    }
+    },
+    "keyboard_shortcuts": "Scorciatoie da tastiera (?)"
   },
   "email_composer": {
     "new_message": "Nuovo messaggio",
@@ -290,7 +318,17 @@
     },
     "remove_sub_address": "Rimuovi sotto-indirizzo",
     "use_template": "Modello",
-    "save_as_template": "Salva come modello"
+    "save_as_template": "Salva come modello",
+    "validation": {
+      "recipient_required": "Aggiungi un destinatario per inviare",
+      "subject_required": "Aggiungi un oggetto",
+      "body_required": "Scrivi un messaggio o allega un file"
+    },
+    "upload_progress": "Caricamento {uploaded} / {total}",
+    "upload_cancel": "Annulla caricamento",
+    "upload_failed": "Caricamento di {filename} non riuscito",
+    "send_failed": "Invio dell'e-mail non riuscito",
+    "discard_draft_title": "Eliminare la bozza?"
   },
   "common": {
     "loading": "Caricamento...",
@@ -788,7 +826,12 @@
       "rule_summary": {
         "conditions_count": "{count, plural, one {# condizione} other {# condizioni}}",
         "actions_count": "{count, plural, one {# azione} other {# azioni}}"
-      }
+      },
+      "templates_section": "Parti da un modello",
+      "template_newsletters": "Sposta newsletter in cartella",
+      "template_receipts": "Archivia ricevute automaticamente",
+      "template_important": "Contrassegna email importanti",
+      "template_notifications": "Filtra notifiche"
     },
     "templates": {
       "title": "Modelli email",
@@ -822,7 +865,11 @@
         "empty": "Il nome del modello è obbligatorio",
         "too_long": "Il nome del modello non deve superare i 200 caratteri"
       }
-    }
+    },
+    "unsaved_changes": "Hai modifiche non salvate",
+    "discard_changes": "Annullare le modifiche?",
+    "discard": "Annulla",
+    "keep_editing": "Continua a modificare"
   },
   "errors": {
     "page_error_title": "Qualcosa è andato storto",
@@ -910,7 +957,9 @@
     "archive": "Archivia conversazione",
     "delete": "Elimina conversazione",
     "star": "Aggiungi stella alla conversazione",
-    "unstar": "Rimuovi stella dalla conversazione"
+    "unstar": "Rimuovi stella dalla conversazione",
+    "messages_tooltip": "{count, plural, one {# messaggio in questa conversazione} other {# messaggi in questa conversazione}}",
+    "toggle_thread": "Espandi/comprimi discussione"
   },
   "identities": {
     "modal_title": "Gestisci identità di invio",
@@ -1019,7 +1068,12 @@
       "notes": "Note",
       "no_contact_selected": "Seleziona un contatto per vedere i dettagli",
       "created": "Creato",
-      "updated": "Ultimo aggiornamento"
+      "updated": "Ultimo aggiornamento",
+      "compose_email": "Scrivi email",
+      "copy_email": "Copia email",
+      "copy_phone": "Copia telefono",
+      "copied": "Copiato negli appunti",
+      "copy_failed": "Impossibile copiare negli appunti"
     },
     "form": {
       "create_title": "Nuovo contatto",
@@ -1044,7 +1098,8 @@
       "updating": "Aggiornamento...",
       "name_required": "È richiesto almeno un nome o cognome",
       "email_invalid": "Inserisci un indirizzo email valido",
-      "save_failed": "Impossibile salvare il contatto"
+      "save_failed": "Impossibile salvare il contatto",
+      "email_error_inline": "Formato email non valido"
     },
     "groups": {
       "create": "Nuovo gruppo",
@@ -1102,7 +1157,12 @@
       "error_create": "Impossibile creare il contatto",
       "error_update": "Impossibile aggiornare il contatto",
       "error_delete": "Impossibile eliminare il contatto"
-    }
+    },
+    "empty_state_title": "Nessun contatto",
+    "empty_state_subtitle": "Crea il tuo primo contatto o importa da un file vCard",
+    "empty_search_hint": "Prova con un altro termine di ricerca",
+    "clear_search": "Cancella ricerca",
+    "import_vcard": "Importa vCard"
   },
   "calendar": {
     "title": "Calendario",
@@ -1113,7 +1173,11 @@
       "week": "Settimana",
       "day": "Giorno",
       "agenda": "Agenda",
-      "today": "Oggi"
+      "today": "Oggi",
+      "month_hint": "Mese (m)",
+      "week_hint": "Settimana (w)",
+      "day_hint": "Giorno (d)",
+      "agenda_hint": "Agenda (a)"
     },
     "events": {
       "create": "Crea evento",
@@ -1124,8 +1188,20 @@
       "all_day": "Tutto il giorno",
       "more": "+{count} altri",
       "no_title": "(Senza titolo)",
+      "resize": "Ridimensiona evento",
+      "duplicate": "Duplica",
       "today_header": "Oggi",
       "tomorrow_header": "Domani"
+    },
+    "detail": {
+      "add_note": "Aggiungi una nota...",
+      "save_note": "Salva",
+      "note_saved": "Nota aggiunta",
+      "open_link": "Apri link",
+      "meeting_link": "Link riunione",
+      "tentative": "Provvisorio",
+      "cancelled": "Annullato",
+      "delete_confirm": "Eliminare questo evento?"
     },
     "form": {
       "title": "Titolo",
@@ -1159,7 +1235,10 @@
       "you_organizer": "Sei l'organizzatore",
       "you_attendee": "Sei un partecipante",
       "no_participants": "Nessun partecipante",
-      "count": "{count, plural, one {# partecipante} other {# partecipanti}}"
+      "count": "{count, plural, one {# partecipante} other {# partecipanti}}",
+      "invited_by": "Invito da {name}",
+      "respond_below": "Rispondi con i pulsanti qui sotto",
+      "rsvp_label": "La tua risposta"
     },
     "recurrence": {
       "title": "Ricorrenza",
@@ -1173,6 +1252,17 @@
       "every_n_months": "Ogni {count} mesi",
       "until": "Fino al",
       "occurrences": "{count} ripetizioni"
+    },
+    "recurrence_scope": {
+      "edit_title": "Modifica evento ricorrente",
+      "delete_title": "Elimina evento ricorrente",
+      "description": "Questo è un evento ricorrente. Quali eventi desideri modificare?",
+      "this_event": "Solo questo evento",
+      "this_and_future": "Questo evento e i seguenti",
+      "all_events": "Tutti gli eventi",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "delete": "Elimina"
     },
     "alerts": {
       "title": "Promemoria",
@@ -1219,16 +1309,23 @@
       "calendar_created": "Calendario creato",
       "calendar_deleted": "Calendario eliminato",
       "event_move_error": "Spostamento dell'evento non riuscito",
+      "event_resize_error": "Ridimensionamento dell'evento non riuscito",
       "alert_title": "Evento in arrivo",
       "alert_now": "Inizia ora",
       "alert_in_minutes": "Tra {count} min",
       "invitation_sent": "Inviti inviati",
       "rsvp_updated": "Risposta aggiornata",
-      "rsvp_error": "Impossibile aggiornare la risposta"
+      "rsvp_error": "Impossibile aggiornare la risposta",
+      "event_duplicated": "Evento duplicato",
+      "event_error": "Salvataggio dell'evento non riuscito"
     },
     "status": {
       "loading_calendars": "Caricamento calendari...",
       "loading_events": "Caricamento eventi..."
+    },
+    "quick_create": {
+      "placeholder": "Titolo del nuovo evento",
+      "aria_label": "Creazione rapida evento"
     },
     "nav_prev": "Precedente",
     "nav_next": "Successivo",
@@ -1249,7 +1346,8 @@
       "error": "Importazione del calendario fallita",
       "file_too_large": "Il file supera il limite di 5 MB",
       "invalid_format": "Formato del file calendario non valido"
-    }
+    },
+    "mini_calendar_change": "Clicca per cambiare mese"
   },
   "advanced_search": {
     "title": "Ricerca avanzata",
@@ -1272,6 +1370,21 @@
     "clear_all": "Cancella tutto",
     "filters_active": "{count} filtro",
     "filters_active_plural": "{count} filtri",
-    "toggle_filters": "Filtri"
+    "toggle_filters": "Filtri",
+    "search_hint": "Usa i filtri avanzati per una ricerca precisa",
+    "advanced_filters_tooltip": "Filtri di ricerca avanzati"
+  },
+  "confirm_dialog": {
+    "confirm": "Conferma",
+    "cancel": "Annulla"
+  },
+  "welcome": {
+    "title": "Benvenuto nella tua casella di posta",
+    "tip_compose": "Premi c per scrivere una nuova email",
+    "tip_shortcuts": "Premi ? per vedere tutte le scorciatoie da tastiera",
+    "tip_sidebar": "Trova Calendario, Contatti e Impostazioni nel menu laterale",
+    "tip_settings": "Personalizza la tua esperienza nelle Impostazioni",
+    "got_it": "Ho capito",
+    "dismiss": "Chiudi"
   }
 }

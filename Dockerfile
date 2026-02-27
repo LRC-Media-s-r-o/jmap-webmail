@@ -3,12 +3,25 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npx next build --webpack
 
 FROM node:24-alpine AS runner
+
+LABEL org.opencontainers.image.title="JMAP Webmail"
+LABEL org.opencontainers.image.description="Modern webmail client built with Next.js and the JMAP protocol"
+LABEL org.opencontainers.image.source="https://github.com/root-fr/jmap-webmail"
+LABEL org.opencontainers.image.url="https://github.com/root-fr/jmap-webmail"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.vendor="root.cloud"
+
 WORKDIR /app
 ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs && \
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN apk upgrade --no-cache && \
+    npm uninstall -g npm && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npx && \
+    addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

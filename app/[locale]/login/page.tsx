@@ -2,43 +2,74 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "@/i18n/navigation";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/auth-store";
 import { useConfig } from "@/hooks/use-config";
-import { Mail, AlertCircle, Loader2, X, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Mail, AlertCircle, Loader2, X, Info, Eye, EyeOff, LogIn } from "lucide-react";
+import { discoverOAuth, type OAuthMetadata } from "@/lib/oauth/discovery";
+import { generateCodeVerifier, generateCodeChallenge, generateState } from "@/lib/oauth/pkce";
+import { OAUTH_SCOPES } from "@/lib/oauth/tokens";
 
 export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations("login");
+  const params = useParams();
   const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore();
-  const { appName, jmapServerUrl: serverUrl, isLoading: configLoading, error: configError } = useConfig();
+  const { appName, jmapServerUrl: serverUrl, oauthEnabled, oauthClientId, oauthIssuerUrl, rememberMeEnabled, isLoading: configLoading, error: configError } = useConfig();
 
-  // All hooks must be called unconditionally at the top
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
-  const [showTotpField, setShowTotpField] = useState(false);
   const [totpCode, setTotpCode] = useState("");
+  const [showTotpField, setShowTotpField] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [shakeError, setShakeError] = useState(false);
 
   const [savedUsernames, setSavedUsernames] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [oauthMetadata, setOauthMetadata] = useState<OAuthMetadata | null>(null);
+  const [oauthDiscoveryDone, setOauthDiscoveryDone] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
+
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedSuggestion = useRef(false);
+  const totpInputRef = useRef<HTMLInputElement>(null);
+  const prevError = useRef<string | null>(null);
 
-  // Set page title
   useEffect(() => {
     if (serverUrl) {
       document.title = appName;
     }
   }, [appName, serverUrl]);
 
-  // Load saved usernames from localStorage on mount
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('session_expired') === 'true') {
+        setSessionExpired(true);
+        sessionStorage.removeItem('session_expired');
+      }
+    } catch { /* sessionStorage unavailable */ }
+  }, []);
+
+  useEffect(() => {
+    if (error && error !== prevError.current) {
+      setShakeError(true);
+      const timer = setTimeout(() => setShakeError(false), 400);
+      return () => clearTimeout(timer);
+    }
+    prevError.current = error;
+  }, [error]);
+
   useEffect(() => {
     if (!serverUrl) return;
     const saved = localStorage.getItem("webmail_usernames");
@@ -62,10 +93,8 @@ export default function LoginPage() {
     clearError();
   }, [formData, clearError]);
 
-  // Filter suggestions based on input
   useEffect(() => {
     if (!serverUrl) return;
-    // Skip showing suggestions if we just selected one
     if (justSelectedSuggestion.current) {
       justSelectedSuggestion.current = false;
       return;
@@ -79,14 +108,13 @@ export default function LoginPage() {
       setShowSuggestions(filtered.length > 0);
     } else if (formData.username === "" && savedUsernames.length > 0) {
       setFilteredSuggestions(savedUsernames);
-      setShowSuggestions(false); // Don't show on empty input
+      setShowSuggestions(false);
     } else {
       setShowSuggestions(false);
     }
     setSelectedSuggestionIndex(-1);
   }, [formData.username, savedUsernames, serverUrl]);
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     if (!serverUrl) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -100,7 +128,19 @@ export default function LoginPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [serverUrl]);
 
-  // Show loading state while config is being fetched
+  useEffect(() => {
+    if (!oauthEnabled || !serverUrl) return;
+    discoverOAuth(oauthIssuerUrl || serverUrl)
+      .then((metadata) => {
+        setOauthMetadata(metadata);
+        setOauthDiscoveryDone(true);
+      })
+      .catch(() => {
+        setOauthMetadata(null);
+        setOauthDiscoveryDone(true);
+      });
+  }, [oauthEnabled, serverUrl, oauthIssuerUrl]);
+
   if (configLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
@@ -112,7 +152,6 @@ export default function LoginPage() {
     );
   }
 
-  // Show error if config fetch failed
   if (configError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
@@ -129,7 +168,6 @@ export default function LoginPage() {
     );
   }
 
-  // Show error if JMAP server URL is not configured
   if (!serverUrl) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
@@ -146,7 +184,6 @@ export default function LoginPage() {
     );
   }
 
-  // Save username on successful login
   const saveUsername = (username: string) => {
     const saved = localStorage.getItem("webmail_usernames");
     let usernames: string[] = [];
@@ -159,7 +196,6 @@ export default function LoginPage() {
       }
     }
 
-    // Add username if not already present, keep max 5 recent usernames
     if (!usernames.includes(username)) {
       usernames = [username, ...usernames].slice(0, 5);
       localStorage.setItem("webmail_usernames", JSON.stringify(usernames));
@@ -167,7 +203,6 @@ export default function LoginPage() {
     }
   };
 
-  // Remove a username from saved list
   const removeUsername = (username: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const updated = savedUsernames.filter(u => u !== username);
@@ -195,7 +230,6 @@ export default function LoginPage() {
     justSelectedSuggestion.current = true;
     setFormData({ ...formData, username });
     setShowSuggestions(false);
-    // Focus password field
     document.getElementById("password")?.focus();
   };
 
@@ -219,6 +253,31 @@ export default function LoginPage() {
     }
   };
 
+  const handleOAuthLogin = async () => {
+    if (!oauthMetadata || !oauthClientId) return;
+    setOauthLoading(true);
+
+    const verifier = generateCodeVerifier();
+    const challenge = await generateCodeChallenge(verifier);
+    const state = generateState();
+    const redirectUri = `${window.location.origin}/${params.locale}/auth/callback`;
+
+    sessionStorage.setItem("oauth_code_verifier", verifier);
+    sessionStorage.setItem("oauth_state", state);
+    sessionStorage.setItem("oauth_server_url", serverUrl!);
+
+    const authUrl = new URL(oauthMetadata.authorization_endpoint);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("client_id", oauthClientId);
+    authUrl.searchParams.set("redirect_uri", redirectUri);
+    authUrl.searchParams.set("scope", OAUTH_SCOPES);
+    authUrl.searchParams.set("state", state);
+    authUrl.searchParams.set("code_challenge", challenge);
+    authUrl.searchParams.set("code_challenge_method", "S256");
+
+    window.location.href = authUrl.toString();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -226,7 +285,8 @@ export default function LoginPage() {
       serverUrl,
       formData.username,
       formData.password,
-      showTotpField && totpCode ? totpCode : undefined
+      totpCode || undefined,
+      rememberMe
     );
 
     if (success) {
@@ -248,12 +308,34 @@ export default function LoginPage() {
           </h1>
         </div>
 
+        {/* Session Expired Banner */}
+        {sessionExpired && (
+          <div
+            className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-3"
+            role="status"
+            aria-live="polite"
+          >
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
+              {t("session_expired")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSessionExpired(false)}
+              className="p-0.5 rounded hover:bg-blue-500/10 transition-colors flex-shrink-0"
+              aria-label={t("dismiss")}
+            >
+              <X className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </button>
+          </div>
+        )}
+
         {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-red-600 dark:text-red-400">
-              {error === 'invalid_credentials' && showTotpField
+              {error === 'invalid_credentials' && showTotpField && totpCode
                 ? t('error.totp_invalid')
                 : t(`error.${error}`) || t("error.generic")}
             </p>
@@ -261,8 +343,11 @@ export default function LoginPage() {
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className={cn("space-y-4", shakeError && "animate-shake")}
+        >
+          <fieldset disabled={isLoading} className="space-y-4">
             <div className="relative">
               <Input
                 ref={inputRef}
@@ -290,9 +375,10 @@ export default function LoginPage() {
                   {filteredSuggestions.map((username, index) => (
                     <div
                       key={username}
-                      className={`px-4 py-2.5 flex items-center justify-between hover:bg-muted cursor-pointer transition-colors ${
-                        index === selectedSuggestionIndex ? "bg-muted" : ""
-                      }`}
+                      className={cn(
+                        "px-4 py-2.5 flex items-center justify-between hover:bg-muted cursor-pointer transition-colors",
+                        index === selectedSuggestionIndex && "bg-muted"
+                      )}
                       onClick={() => selectSuggestion(username)}
                     >
                       <span className="text-sm text-foreground">{username}</span>
@@ -310,45 +396,82 @@ export default function LoginPage() {
               )}
             </div>
 
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="h-12 px-4 bg-secondary/50 border-border/50 focus:bg-secondary focus:border-primary/50 transition-colors"
-              placeholder={t("password_placeholder")}
-              required
-              autoComplete="current-password"
-            />
-
-            {/* TOTP Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                setShowTotpField(!showTotpField);
-                if (showTotpField) setTotpCode("");
-              }}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              {showTotpField ? t("totp_hide") : t("totp_toggle")}
-            </button>
-
-            {/* TOTP Input */}
-            {showTotpField && (
+            <div className="relative">
               <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="h-12 px-4 pr-11 bg-secondary/50 border-border/50 focus:bg-secondary focus:border-primary/50 transition-colors"
+                placeholder={t("password_placeholder")}
+                required
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? t("hide_password") : t("show_password")}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4.5 h-4.5" />
+                ) : (
+                  <Eye className="w-4.5 h-4.5" />
+                )}
+              </button>
+            </div>
+
+            {!showTotpField ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTotpField(true);
+                  setTimeout(() => totpInputRef.current?.focus(), 50);
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
+              >
+                {t("totp_toggle")}
+              </button>
+            ) : (
+              <Input
+                ref={totpInputRef}
                 id="totp"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                className="h-12 px-4 bg-secondary/50 border-border/50 focus:bg-secondary focus:border-primary/50 transition-colors text-center font-mono text-lg tracking-widest"
+                className="h-10 px-4 bg-secondary/50 border-border/50 focus:bg-secondary focus:border-primary/50 transition-colors text-center font-mono tracking-widest"
                 placeholder={t("totp_placeholder")}
                 autoComplete="one-time-code"
+                aria-label={t("totp_label")}
               />
             )}
-          </div>
+
+            {rememberMeEnabled && (
+              <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+                <span className="relative flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <span className="flex items-center justify-center w-4.5 h-4.5 rounded border border-border bg-secondary/50 peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background transition-colors">
+                    {rememberMe && (
+                      <svg className="w-3 h-3 text-primary-foreground" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
+                </span>
+                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  {t("remember_me")}
+                </span>
+              </label>
+            )}
+          </fieldset>
 
           <Button
             type="submit"
@@ -364,6 +487,43 @@ export default function LoginPage() {
               t("sign_in")
             )}
           </Button>
+
+          {oauthMetadata && (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">{t("or")}</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12 font-medium text-base"
+                onClick={handleOAuthLogin}
+                disabled={oauthLoading || isLoading}
+              >
+                {oauthLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <LogIn className="w-4 h-4 mr-2" />
+                )}
+                {t("sign_in_sso")}
+              </Button>
+            </>
+          )}
+
+          {oauthEnabled && oauthDiscoveryDone && !oauthMetadata && (
+            <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-700 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                {t("error.oauth_discovery_failed")}
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>

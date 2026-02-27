@@ -14,6 +14,7 @@ import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
 import { useEmailStore } from "@/stores/email-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useSettingsStore } from "@/stores/settings-store";
+import { useIdentityStore } from "@/stores/identity-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useDeviceDetection } from "@/hooks/use-media-query";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -30,6 +31,8 @@ import {
 import { DragDropProvider } from "@/contexts/drag-drop-context";
 import { AdvancedSearchPanel } from "@/components/search/advanced-search-panel";
 import { isFilterEmpty } from "@/lib/jmap/search-utils";
+import { WelcomeBanner } from "@/components/ui/welcome-banner";
+import { NavigationRail } from "@/components/layout/navigation-rail";
 
 export default function Home() {
   const router = useRouter();
@@ -37,6 +40,7 @@ export default function Home() {
   const tCommon = useTranslations('common');
   const [showComposer, setShowComposer] = useState(false);
   const [composerMode, setComposerMode] = useState<'compose' | 'reply' | 'replyAll' | 'forward'>('compose');
+  const [composerDraftText, setComposerDraftText] = useState("");
   const [initialCheckDone, setInitialCheckDone] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   // Mobile conversation view state
@@ -45,6 +49,7 @@ export default function Home() {
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);
   const markAsReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { isAuthenticated, client, logout, checkAuth, isLoading: authLoading } = useAuthStore();
+  const { identities } = useIdentityStore();
 
   // Mobile/tablet responsive hooks
   const { isMobile, isTablet } = useDeviceDetection();
@@ -370,12 +375,13 @@ export default function Home() {
     body: string;
     draftId?: string;
     fromEmail?: string;
+    fromName?: string;
     identityId?: string;
   }) => {
     if (!client) return;
 
     try {
-      await sendEmail(client, data.to, data.subject, data.body, data.cc, data.bcc, data.identityId, data.fromEmail, data.draftId);
+      await sendEmail(client, data.to, data.subject, data.body, data.cc, data.bcc, data.identityId, data.fromEmail, data.draftId, data.fromName);
       setShowComposer(false);
 
       // Refresh the current mailbox to update the UI
@@ -395,7 +401,8 @@ export default function Home() {
     }
   };
 
-  const handleReply = () => {
+  const handleReply = (draftText?: string) => {
+    setComposerDraftText(draftText || "");
     setComposerMode('reply');
     setShowComposer(true);
   };
@@ -601,12 +608,20 @@ export default function Home() {
       throw new Error("No sender email found");
     }
 
+    const primaryIdentity = identities[0];
+
     // Send reply with just the body text
     await sendEmail(
       client,
       [sender.email],
       `Re: ${selectedEmail.subject || "(no subject)"}`,
-      body
+      body,
+      undefined,
+      undefined,
+      primaryIdentity?.id,
+      primaryIdentity?.email,
+      undefined,
+      primaryIdentity?.name || undefined
     );
 
     // Refresh emails to show the sent reply
@@ -718,6 +733,13 @@ export default function Home() {
   return (
     <DragDropProvider>
       <div className="flex h-screen bg-background overflow-hidden">
+        {/* Desktop Navigation Rail */}
+        {!isMobile && !isTablet && (
+          <div className="w-14 border-r border-border bg-secondary flex flex-col items-center flex-shrink-0">
+            <NavigationRail collapsed />
+          </div>
+        )}
+
         {/* Mobile/Tablet Sidebar Overlay Backdrop */}
         {(isMobile || isTablet) && sidebarOpen && (
           <div
@@ -760,7 +782,8 @@ export default function Home() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex flex-1 min-w-0 h-full">
+        <div className="flex flex-col flex-1 min-w-0 h-full">
+          <div className="flex flex-1 min-h-0">
           {/* Email List - full width on mobile, fixed width on tablet/desktop */}
           <div
             className={cn(
@@ -795,6 +818,8 @@ export default function Home() {
               onSearch={handleAdvancedSearch}
               onClose={toggleAdvancedSearch}
             />
+
+            <WelcomeBanner />
 
             <ErrorBoundary fallback={EmailListErrorFallback}>
               <EmailList
@@ -917,6 +942,7 @@ export default function Home() {
                       setTabletListVisible(true);
                       selectEmail(null);
                     }}
+                    onShowShortcuts={() => setShowShortcutsModal(true)}
                     currentUserEmail={client?.["username"]}
                     currentUserName={client?.["username"]?.split("@")[0]}
                     currentMailboxRole={mailboxes.find(m => m.id === selectedMailbox)?.role}
@@ -926,6 +952,12 @@ export default function Home() {
               </>
             )}
           </div>
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          {isMobile && activeView !== "viewer" && (
+            <NavigationRail orientation="horizontal" />
+          )}
         </div>
 
         {/* Email Composer Modal */}
@@ -952,10 +984,12 @@ export default function Home() {
                     body: selectedEmail.bodyValues?.[selectedEmail.textBody?.[0]?.partId || '']?.value || selectedEmail.preview || '',
                     receivedAt: selectedEmail.receivedAt
                   } : undefined}
+                  initialDraftText={composerDraftText}
                   onSend={handleEmailSend}
                   onClose={() => {
                     setShowComposer(false);
                     setComposerMode('compose');
+                    setComposerDraftText("");
                   }}
                   onDiscardDraft={handleDiscardDraft}
                 />
@@ -969,6 +1003,9 @@ export default function Home() {
           isOpen={showShortcutsModal}
           onClose={() => setShowShortcutsModal(false)}
         />
+
+        {/* Screen reader live region for dynamic status announcements */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true" id="sr-status" />
       </div>
     </DragDropProvider>
   );
